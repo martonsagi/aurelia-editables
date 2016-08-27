@@ -1,7 +1,26 @@
 {
   "name": "aurelia-editables",
-  "version": "0.2.8",
-  "private": true,
+  "version": "0.1.0",
+  "author": "Marton Sagi <hello@martonsagi.me>",
+  "description": "Configuration-based data editor (Datagrid and Forms) plugin for Aurelia (http://aurelia.io/) ",
+  "homepage": "https://github.com/martonsagi/aurelia-editables",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/martonsagi/aurelia-editables/issues"
+  },
+  "keywords": [
+    "aurelia",
+    "datagrid",
+    "form",
+    "editable",
+    "typescript"
+  ],
+  "main": "dist/aurelia-editables.js",
+  "typings": "dist/aurelia-editables.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/martonsagi/aurelia-editables"
+  },
   "devDependencies": {
     "aurelia-bundler": "^0.4.0",
     "aurelia-tools": "^0.2.3",
@@ -58,12 +77,6 @@
     "vinyl-paths": "^2.1.0",
     "yargs": "^4.7.1"
   },
-  "keywords": [
-    "aurelia",
-    "datagrid",
-    "dataform",
-    "typescript"
-  ],
   "scripts": {
     "postinstall": "./node_modules/.bin/jspm install -y",
     "test": "gulp test",
@@ -71,7 +84,7 @@
   },
   "jspm": {
     "registry": "npm",
-    "main": "aurelia-editables.min",
+    "main": "aurelia-editables",
     "jspmPackage": true,
     "format": "amd",
     "directories": {
