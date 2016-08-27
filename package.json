@@ -1,6 +1,6 @@
 {
   "name": "aurelia-editables",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "author": "Marton Sagi <hello@martonsagi.me>",
   "description": "Configuration-based data editor (Datagrid and Forms) plugin for Aurelia (http://aurelia.io/) ",
   "homepage": "https://github.com/martonsagi/aurelia-editables",
@@ -78,7 +78,6 @@
     "yargs": "^4.7.1"
   },
   "scripts": {
-    "postinstall": "./node_modules/.bin/jspm install -y",
     "test": "gulp test",
     "e2e": "gulp serve e2e"
   },
@@ -90,16 +89,30 @@
     "directories": {
       "lib": "dist"
     },
-    "dependencies": {
-      "aurelia-framework": "^1.0.0-rc.1.0.0",
-      "aurelia-http-client": "^1.0.0-rc.1.0.0",
+    "peerDependencies": {
+      "aurelia-framework": "^1.0.0",
+      "aurelia-http-client": "^1.0.0",
       "aurelia-i18n": "^1.0.0",
-      "aurelia-templating-binding": "^1.0.0-rc.1.0.0",
-      "aurelia-templating-resources": "^1.0.0-rc.1.0.0",
+      "aurelia-templating-binding": "^1.0.0",
+      "aurelia-templating-resources": "^1.0.0",
       "aurelia-validatejs": "^0.7.0",
       "aurelia-validation": "^0.11.0",
       "bootstrap": "github:twbs/bootstrap@^3.3.6",
-      "font-awesome": "^4.6.3",
+      "i18next-xhr-backend": "^1.1.0",
+      "interact.js": "^1.2.6",
+      "jquery": "2.2.4",
+      "lodash": "^4.14.1",
+      "text": "github:systemjs/plugin-text@^0.0.8"
+    },
+    "dependencies": {
+      "aurelia-framework": "^1.0.0",
+      "aurelia-http-client": "^1.0.0",
+      "aurelia-i18n": "^1.0.0",
+      "aurelia-templating-binding": "^1.0.0",
+      "aurelia-templating-resources": "^1.0.0",
+      "aurelia-validatejs": "^0.7.0",
+      "aurelia-validation": "^0.11.0",
+      "bootstrap": "github:twbs/bootstrap@^3.3.6",
       "i18next-xhr-backend": "^1.1.0",
       "interact.js": "^1.2.6",
       "jquery": "2.2.4",
@@ -112,5 +125,13 @@
       "core-js": "^1.1.4"
     }
   },
-  "dependencies": {}
+  "dependencies": {
+    "aurelia-framework": "^1.0.0",
+    "aurelia-http-client": "^1.0.0",
+    "aurelia-i18n": "^1.0.0",
+    "aurelia-templating-binding": "^1.0.0",
+    "aurelia-templating-resources": "^1.0.0",
+    "aurelia-validatejs": "^0.7.0",
+    "aurelia-validation": "^0.11.0"
+  }
 }
