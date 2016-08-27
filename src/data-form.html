@@ -1,0 +1,59 @@
+﻿<template ref="dataForm">
+    <form asp-antiforgery="true" ref="form">
+        <div class="data-form container-fluid">
+            <div if.bind="showToolbar" class="form-toolbar">
+                <div class="pull-left">
+                    <span class="text-larger"><i if.bind="options.titleIcon" class.bind="options.titleIcon"></i> ${options.title | t}</span>
+                </div>
+                <div class="pull-right" style="padding: 5px 0;">
+                    <button if.bind="options.editing === true"
+                            disabled.bind="isValid !== true || record.state !== 'modified'"
+                            class="btn btn-success"
+                            click.trigger="callSave($event)"
+                            title="*{'Save' | t}">
+                        <i class="fa fa-check"></i>
+                        Save
+                    </button>
+                    <button if.bind="options.editing === true"
+                            disabled.bind="record.state !== 'modified'"
+                            class="btn btn-default"
+                            click.trigger="callCancel($event)"
+                            title="${'Cancel' | t}">
+                        <i class="fa fa-ban"></i>
+                        Cancel
+                    </button>
+                </div>
+                <span class="clearfix"></span>
+            </div>
+
+            <div class="row">
+
+                <div class="${options.form.groupCols ? options.form.groupCols : 'col-xs-12 col-sm-6'}"
+                     repeat.for="group of groups">
+                    <div if.bind="group.name !== null" class="field-group-name text-larger">${group.name | t}</div>
+
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="${options.form.cols ? options.form.cols : 'col-xs-12 col-sm-6 col-lg-4'}"
+                                 show.bind="column.hideOnForm !== true"
+                                 repeat.for="column of group.fields">
+
+                                <field options.bind="column"
+                                       edit-mode.bind="true"
+                                       field-value.bind="record[column.name]"
+                                       record.bind="record"
+                                       with-label.bind="true"
+                                       editable-class="form-group"
+                                       integrated-mode.bind="integratedMode"
+                                       data-object.bind="dataForm" />
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </form>
+</template>

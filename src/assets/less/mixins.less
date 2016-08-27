@@ -1,0 +1,13 @@
+﻿.box-shadow(@sizes, @color) {
+    -webkit-box-shadow: @sizes @color;
+    -moz-box-shadow: @sizes @color;
+    box-shadow: @sizes @color;
+}
+
+.text-overflow(@style: ellipsis) {
+    white-space: nowrap;
+    overflow: hidden;
+    -ms-text-overflow: @style;
+    -o-text-overflow: @style;
+    text-overflow: @style;
+}

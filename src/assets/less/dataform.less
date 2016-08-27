@@ -1,0 +1,56 @@
+﻿/* DataForm control */
+
+@import "variables.less";
+@import "mixins.less";
+
+.data-form {
+    padding: 0 0 10px;
+
+    &  > .row > div .container-fluid {
+        padding-left: 0;
+    }
+
+    .field-group-name {
+        padding-bottom: 20px;
+    }
+}
+
+.form-toolbar {
+    padding: 5px 0 15px;
+}
+
+.form-control.filter-input {
+    width: 80%;
+    display: inline;
+}
+
+.field-error {
+    color: @color-field-error;
+
+    .form-control {
+        .box-shadow(@sizes: inset 0 -1px 0, @color: @color-field-error);     
+
+        &:focus {
+            .box-shadow(@sizes: inset 0 -2px 0, @color: @color-field-error);
+        }
+    }
+
+     ul.error-list {
+        margin: 5px 0 0;
+        padding: 0;
+
+        li {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+            text-align: right;
+            font-style: italic;
+        }
+    }
+}
+
+input[type="checkbox"]:after, 
+.checkbox input[type="checkbox"]:after, 
+.checkbox-inline input[type="checkbox"]:after {
+    display: inline-block !important;
+}

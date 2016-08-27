@@ -1,0 +1,108 @@
+/* Base Stylesheets */
+/* DataForm colors */
+/* DataGrid colors */
+/* DataGrid control */
+.data-grid .table-responsive {
+  min-height: 400px;
+  max-height: 600px;
+}
+.data-grid .table-toolbar {
+  margin: 0 0 15px;
+}
+.data-grid table {
+  width: auto;
+  margin-bottom: 0px;
+}
+.data-grid thead th > div > div {
+  cursor: pointer;
+}
+.data-grid,
+.data-grid td,
+.data-grid .form-control {
+  font-size: 14px !important;
+}
+.data-grid td .boolean-content,
+.data-grid th .boolean-content {
+  text-align: center;
+}
+.data-grid td {
+  white-space: nowrap;
+  overflow: hidden;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  width: 150px;
+  max-width: 150px;
+}
+.data-grid td .field-content {
+  padding: 5px 0 2px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  -ms-text-overflow: ellipsis;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+}
+.data-grid td .form-control {
+  height: 35px;
+}
+.data-grid td .form-control.form-checkbox {
+  margin: 9px auto 0;
+  height: 26px;
+  width: 20px;
+}
+.data-grid td .boolean-editor {
+  text-align: center;
+}
+.data-grid tbody tr.active > td {
+  background-color: #edf6fd;
+}
+.data-grid-sorter {
+  margin-right: 5px;
+}
+/* DataForm control */
+.data-form {
+  padding: 0 0 10px;
+}
+.data-form > .row > div .container-fluid {
+  padding-left: 0;
+}
+.data-form .field-group-name {
+  padding-bottom: 20px;
+}
+.form-toolbar {
+  padding: 5px 0 15px;
+}
+.form-control.filter-input {
+  width: 80%;
+  display: inline;
+}
+.field-error {
+  color: #d00;
+}
+.field-error .form-control {
+  -webkit-box-shadow: inset 0 -1px 0 #d00;
+  -moz-box-shadow: inset 0 -1px 0 #d00;
+  box-shadow: inset 0 -1px 0 #d00;
+}
+.field-error .form-control:focus {
+  -webkit-box-shadow: inset 0 -2px 0 #d00;
+  -moz-box-shadow: inset 0 -2px 0 #d00;
+  box-shadow: inset 0 -2px 0 #d00;
+}
+.field-error ul.error-list {
+  margin: 5px 0 0;
+  padding: 0;
+}
+.field-error ul.error-list li {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-align: right;
+  font-style: italic;
+}
+input[type="checkbox"]:after,
+.checkbox input[type="checkbox"]:after,
+.checkbox-inline input[type="checkbox"]:after {
+  display: inline-block !important;
+}

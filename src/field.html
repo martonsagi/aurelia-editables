@@ -1,0 +1,19 @@
+﻿<template>
+
+    <span if.bind="!editMode" class="field-content ${editorType}-content"><compose model.bind="fieldModel" view.bind="viewStrategy"></compose></span>
+
+    <div if.bind="editMode" class="${editableClass} ${editorType}-editor ${!isValid ? 'field-error' : ''}">
+        <label if.bind="withLabel === true">${options.title ? options.title : options.name | t}</label>
+
+        <compose view-model="${editorViewModel}" model.bind="fieldModel"></compose>
+
+        <div if.bind="!isValid" class="animated fadeInDown">
+            <ul class="error-list">
+                <li repeat.for="errorInfo of errors">
+                    ${errorInfo.message}
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</template>
