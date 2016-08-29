@@ -591,7 +591,7 @@ export class DataGrid {
 
     //#region Column resizing
 
-    static resizeColumn(customEvent) {
+    resizeColumn(customEvent) {
         let event = customEvent.detail,
             target = event.target,
             x = (parseFloat(target.getAttribute('data-x')) || 0),

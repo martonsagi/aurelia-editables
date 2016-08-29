@@ -376,7 +376,7 @@ define(["require", "exports", 'aurelia-framework', './config', './api', './recor
         DataGrid.prototype.parentRecordChanged = function () {
             this.refresh();
         };
-        DataGrid.resizeColumn = function (customEvent) {
+        DataGrid.prototype.resizeColumn = function (customEvent) {
             var event = customEvent.detail, target = event.target, x = (parseFloat(target.getAttribute('data-x')) || 0), y = (parseFloat(target.getAttribute('data-y')) || 0), data = $(target).data();
             if (event.rect.width < 100)
                 return;
