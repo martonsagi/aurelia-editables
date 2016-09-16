@@ -7,11 +7,11 @@ exports.base = function() {
     filenameRelative: '',
     sourceMap: true,
     sourceRoot: '',
-    moduleRoot: path.resolve('src').replace(/\\/g, '/'),
+    moduleRoot: path.resolve('transpiled').replace(/\\/g, '/'),
     moduleIds: false,
     comments: false,
     compact: false,
-    code: true,
+    code:true,
     presets: [ 'es2015-loose', 'stage-1'],
     plugins: [
       'syntax-flow',
@@ -19,7 +19,7 @@ exports.base = function() {
       'transform-flow-strip-types'
     ]
   };
-};
+}
 
 exports.commonjs = function() {
   var options = exports.base();
@@ -41,6 +41,12 @@ exports.system = function() {
 
 exports.es2015 = function() {
   var options = exports.base();
-  options.presets = ['stage-1'];
+  options.presets = ['stage-1']
   return options;
+};
+
+exports['native-modules'] = function() {
+    var options = exports.base();
+    options.presets[0] = 'es2015-loose-native-modules';
+    return options;
 };

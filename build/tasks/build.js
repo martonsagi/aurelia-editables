@@ -1,56 +1,52 @@
-var gulp = require('gulp');
-var runSequence = require('run-sequence');
-var changed = require('gulp-changed');
-var plumber = require('gulp-plumber');
-var sourcemaps = require('gulp-sourcemaps');
 var paths = require('../paths');
+var path = require('path');
+var gulp = require('gulp');
+
 var assign = Object.assign || require('object.assign');
-var notify = require('gulp-notify');
-var typescript = require('gulp-typescript');
-var exec = require('child_process').exec;
+var changed = require('gulp-changed');
+var compilerOptions = require('../babel-options');
+var concat = require('gulp-concat');
 var htmlmin = require('gulp-htmlmin');
 var less = require('gulp-less');
-var path = require('path');
 var minifyCss = require('gulp-minify-css');
-var concat = require('gulp-concat');
+var notify = require('gulp-notify');
+var plumber = require('gulp-plumber');
+var runSequence = require('run-sequence');
+var sourcemaps = require('gulp-sourcemaps');
+var to5 = require('gulp-babel');
+var typescript = require('gulp-typescript');
 
-// transpiles changed es6 files to SystemJS format
+
+// transpiles changed TS files to ES6 format
 // the plumber() call prevents 'pipe breaking' caused
 // by errors from other gulp plugins
 // https://www.npmjs.com/package/gulp-plumber
 var typescriptCompiler = typescriptCompiler || null;
-gulp.task('build-system', function () {
+gulp.task('build-ts', function () {
     if (!typescriptCompiler) {
         typescriptCompiler = typescript.createProject('tsconfig.json', {
             "typescript": require('typescript')
         });
     }
 
-    return gulp.src(paths.dtsSrc.concat(paths.source))
+    return gulp.src(paths.dtsSrc.concat(paths.tsSource))
         .pipe(plumber({errorHandler: notify.onError('Error: <%= error.message %>')}))
-        .pipe(changed(paths.output, {extension: '.ts'}))
+        .pipe(changed(paths.tsOutput, {extension: '.ts'}))
         .pipe(sourcemaps.init({loadMaps: true}))
         .pipe(typescript(typescriptCompiler))
         .pipe(sourcemaps.write('.', {includeContent: false, sourceRoot: 'src'}))
-        .pipe(gulp.dest(paths.output));
+        .pipe(gulp.dest(paths.tsOutput));
 });
 
 // copies changed html files to the output directory
 gulp.task('build-html', function () {
     return gulp.src(paths.html)
-        .pipe(changed(paths.output, {extension: '.html'}))
-        .pipe(htmlmin({collapseWhitespace: true}))
-        .pipe(gulp.dest(paths.output));
+        .pipe(gulp.dest(paths.output + 'es2015'))
+        .pipe(gulp.dest(paths.output + 'commonjs'))
+        .pipe(gulp.dest(paths.output + 'amd'))
+        .pipe(gulp.dest(paths.output + 'system'));
 });
 
-// copies changed html files to the output directory
-gulp.task('build-locales', function () {
-    return gulp.src(paths.locales)
-        .pipe(changed(paths.output, {extension: '.json'}))
-        .pipe(gulp.dest(paths.output + 'locales/'));
-});
-
-// copies changed html files to the output directory
 gulp.task('build-dts', function () {
     return gulp.src(paths.dtsPath)
         .pipe(changed(paths.output, {extension: '.d.ts'}))
@@ -61,14 +57,14 @@ gulp.task('build-dts', function () {
 // copies changed css files to the output directory
 gulp.task('build-css', function () {
     return gulp.src([
-        paths.cssRoot + 'aurelia-editables.css',
+        paths.cssRoot + '**/*.css',
     ])
         .pipe(changed(paths.cssOutput, {extension: '.css'}))
         .pipe(minifyCss())
         .pipe(gulp.dest(paths.cssOutput));
 });
 
-// copies changed css files to the output directory
+// less processing
 gulp.task('build-less', function () {
     return gulp.src([
         paths.lessRoot + 'template.less',
@@ -79,14 +75,41 @@ gulp.task('build-less', function () {
         .pipe(gulp.dest(paths.cssRoot));
 });
 
-// this task calls the clean task (located
-// in ./clean.js), then runs the build-system
-// and build-html tasks in parallel
-// https://www.npmjs.com/package/gulp-run-sequence
+gulp.task('build-es2015', function () {
+    return gulp.src(paths.source)
+        .pipe(to5(assign({}, compilerOptions.es2015())))
+        .pipe(gulp.dest(paths.output + 'es2015'));
+});
+
+gulp.task('build-commonjs', function () {
+    return gulp.src(paths.source)
+        .pipe(to5(assign({}, compilerOptions.commonjs())))
+        .pipe(gulp.dest(paths.output + 'commonjs'));
+});
+
+gulp.task('build-amd', function () {
+    return gulp.src(paths.source)
+        .pipe(to5(assign({}, compilerOptions.amd())))
+        .pipe(gulp.dest(paths.output + 'amd'));
+});
+
+gulp.task('build-system', function () {
+    return gulp.src(paths.source)
+        .pipe(to5(assign({}, compilerOptions.system())))
+        .pipe(gulp.dest(paths.output + 'system'));
+});
+
+gulp.task('build-native-modules', function () {
+    return gulp.src(paths.source)
+        .pipe(to5(assign({}, compilerOptions["native-modules"]())))
+        .pipe(gulp.dest(paths.output + 'native-modules'));
+});
+
 gulp.task('build', function (callback) {
     return runSequence(
         'clean',
-        ['build-system', 'build-dts', 'build-html', 'build-locales', 'build-less', 'build-css'],
+        ['build-ts', 'build-dts'],
+        ['build-less', 'build-css', 'build-html', 'build-es2015', 'build-commonjs', 'build-amd', 'build-system', 'build-native-modules'],
         callback
     );
 });

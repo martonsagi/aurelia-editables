@@ -1,1 +1,0 @@
-<template><select value.bind="field.fieldValue & validate" class="form-control" blur.trigger="field.blur($event)"><option model.bind="null">${'Choose...' | t}</option><option repeat.for="elem of field.options.editor.values" model.bind="elem.value">${elem.text | t}</option></select></template>

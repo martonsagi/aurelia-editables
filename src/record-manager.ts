@@ -1,5 +1,4 @@
 import { Record, RecordState } from './record';
-import * as _ from 'lodash';
 
 export class RecordManager extends Array<Record> {
 
@@ -137,15 +136,15 @@ export class RecordManager extends Array<Record> {
     }
 
     getChanges() {
-        let modified = _.filter(this, item => {
+        let modified = this.filter(item => {
             return item.state === RecordState.modified;
         });
 
-        let added = _.filter(this, item => {
+        let added = this.filter(item => {
             return item.state === RecordState.added;
         });
 
-        let deleted = _.filter(this, item => {
+        let deleted = this.filter(item => {
             return item.state === RecordState.deleted;
         });
 
@@ -159,7 +158,7 @@ export class RecordManager extends Array<Record> {
 
     validate() {
         this.isValid = true;
-        let rows = _.filter(this, item => item.state !== RecordState.deleted);
+        let rows = this.filter(item => item.state !== RecordState.deleted);
         for (let row of rows) {
             if (row.isValid !== true) {
                 this.isValid = false;

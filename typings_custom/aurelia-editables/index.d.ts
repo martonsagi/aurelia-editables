@@ -217,7 +217,7 @@ declare module 'i18next-xhr-backend' {
         interpolator: Interpolator
     }
 
-    export default class Backend {
+    /*export default class Backend {
         type: 'backend';
         services: Services;
         options: BackendOptions;
@@ -227,7 +227,7 @@ declare module 'i18next-xhr-backend' {
         read(language: {}, namespace: {}, callback: () => void): void;
         loadUrl(url: string, callback: () => void): void;
         create(languages: any[], namespace: string, key: string, fallbackValue: string): void;
-    }
+    }*/
 }
 
 //#endregion

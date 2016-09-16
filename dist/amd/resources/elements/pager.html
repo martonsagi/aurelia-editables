@@ -1,0 +1,26 @@
+
+<template>
+    <ul class="pagination" style="margin: 0">
+        <li if.bind="total > 1" class.bind="current === 1 ? 'disabled' : ''">
+            <a href="#" aria-label="${'Previous' | t}" click.delegate="prev()">
+                <span aria-hidden="true">&laquo;</span>
+            </a>
+        </li>
+
+        <li if.bind="total > 1" repeat.for="page of total" class.bind="page === current-1 ? 'active' : ''">
+            <a href="#" click.delegate="setPage(page+1)">${page+1}</a>
+        </li>
+
+        <li if.bind="total > 1" class.bind="current === total ? 'disabled' : ''">
+            <a href="#" aria-label="${'Next' | t}" click.delegate="next()">
+                <span aria-hidden="true">&raquo;</span>
+            </a>
+        </li>
+        <li>
+            <a>
+                <span if.bind="count > 0">${(current * size) - size + 1} - ${(current * size) > count ? count : (current * size)} of</span>
+                ${count} records
+            </a>
+        </li>
+    </ul>    
+</template>
