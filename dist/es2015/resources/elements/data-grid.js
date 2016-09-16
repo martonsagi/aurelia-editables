@@ -8,14 +8,13 @@ var __decorate = this && this.__decorate || function (decorators, target, key, d
 var __metadata = this && this.__metadata || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { bindable, autoinject, ViewCompiler, Container, BindingEngine } from 'aurelia-framework';
+import { bindable, autoinject, ViewCompiler, Container } from 'aurelia-framework';
 import { Config } from '../../config';
 import { Api } from '../../api';
 import { RecordState } from '../../record';
 import { RecordManager } from '../../record-manager';
 export let DataGrid = class DataGrid {
     constructor(element, viewCompiler) {
-        this.records = new RecordManager();
         this.currentRecord = null;
         this.parentRecord = null;
         this.editMode = false;
@@ -24,6 +23,7 @@ export let DataGrid = class DataGrid {
         this.childMode = false;
         this.canLoad = false;
         this.showToolbar = true;
+        this.recordManager = new RecordManager();
         this.queryModel = { filters: [] };
         this.columnFilters = null;
         this.filterVisible = false;
@@ -35,8 +35,6 @@ export let DataGrid = class DataGrid {
         this.viewCompiler = viewCompiler;
         this.pluginConfig = Container.instance.get(Config);
         this.apiClass = this.pluginConfig.api;
-        let locator = Container.instance.get(BindingEngine);
-        locator.collectionObserver(this.records).subscribe(this.onRecordsChange.bind(this));
         this.dispatch('on-created', { viewModel: this });
     }
     created() {}
@@ -94,10 +92,11 @@ export let DataGrid = class DataGrid {
                 t.columnFilters[childOptions.childFieldName] = this.parentRecord[childOptions.parentFieldName];
             }
             t.total = result.total;
-            t.records = new RecordManager(t.entity);
-            t.records.filters = t.queryModel;
-            t.records.load(result.data);
-            t.select(t.records[0]);
+            t.recordManager = new RecordManager(t.entity);
+            console.log(t.recordManager);
+            t.recordManager.queryModel = t.queryModel;
+            t.recordManager.load(result.data);
+            t.select(t.recordManager[0]);
             t.loading = false;
             this.dispatch('on-after-load', { viewModel: t });
         });
@@ -108,10 +107,8 @@ export let DataGrid = class DataGrid {
             loader = this.loader;
         let width = table.style.width > tableContainer.style.width ? tableContainer.style.width : table.style.width,
             height = table.style.height > tableContainer.style.height ? tableContainer.style.height : table.style.height;
-        loader.css({
-            'width': width + 'px',
-            'height': height + 'px'
-        });
+        loader.style.width = width + 'px';
+        loader.style.height = height + 'px';
         loader.querySelector('.spinner').style.marginTop = tableContainer.style.height / 2 + 'px';
     }
     loadColumns() {
@@ -210,8 +207,8 @@ export let DataGrid = class DataGrid {
     select(rec) {
         this.dispatch('on-select', { viewModel: this });
         if (this.currentRecord) this.currentRecord.editMode = false;
-        this.records.current(rec);
-        this.currentRecord = this.records.currentRecord;
+        this.recordManager.current(rec);
+        this.currentRecord = this.recordManager.currentRecord;
         if (this.currentRecord) this.currentRecord.editMode = this.editMode;
         if (this.editMode === true) {
             this.validate();
@@ -229,11 +226,11 @@ export let DataGrid = class DataGrid {
         return true;
     }
     add() {
-        this.records.add();
+        this.recordManager.add();
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
         this.isValid = false;
-        this.select(this.records.currentRecord);
+        this.select(this.recordManager.currentRecord);
         this.dispatch('on-record-add', { viewModel: this });
     }
     edit() {
@@ -254,7 +251,7 @@ export let DataGrid = class DataGrid {
     }
     remove(item) {
         this.dispatch('on-record-remove', { viewModel: this, record: item });
-        this.records.remove(item);
+        this.recordManager.remove(item);
     }
     save() {
         let t = this,
@@ -275,7 +272,7 @@ export let DataGrid = class DataGrid {
         }
         let reqs = Promise.all(tasks);
         reqs.then(() => {
-            t.records.save(changes);
+            t.recordManager.save(changes);
             if (changes.added.length > 0) {
                 t.total += changes.added.length;
             }
@@ -290,7 +287,7 @@ export let DataGrid = class DataGrid {
         });
     }
     cancel(showConfirm) {
-        let isDirty = this.records.dirty();
+        let isDirty = this.recordManager.dirty();
         if (showConfirm === true && isDirty === true) {
             if (!confirm('You have unsaved changes. Are you sure you wish to leave?')) {
                 return false;
@@ -298,11 +295,11 @@ export let DataGrid = class DataGrid {
         }
         let changes = this.getChanges();
         this.dispatch('on-before-cancel', { viewModel: this, changes: changes });
-        if (isDirty === true) this.records.cancel();
+        if (isDirty === true) this.recordManager.cancel();
         this.editMode = false;
         if (this.currentRecord) {
             this.currentRecord.editMode = false;
-            this.select(this.records.currentRecord);
+            this.select(this.recordManager.currentRecord);
         }
         this.formMode = false;
         this.isValid = true;
@@ -312,13 +309,13 @@ export let DataGrid = class DataGrid {
         this.dispatch('on-records-changed', { viewModel: this, changes: splice });
     }
     getChanges() {
-        let modified = this.records.filter(item => {
+        let modified = this.recordManager.records.filter(item => {
             return item.state === RecordState.modified;
         });
-        let added = this.records.filter(item => {
+        let added = this.recordManager.records.filter(item => {
             return item.state === RecordState.added;
         });
-        let deleted = this.records.filter(item => {
+        let deleted = this.recordManager.records.filter(item => {
             return item.state === RecordState.deleted;
         });
         return {
@@ -330,16 +327,16 @@ export let DataGrid = class DataGrid {
     }
     validate() {
         this.dispatch('on-before-validate', { viewModel: this });
-        this.records.validate();
+        this.recordManager.validate();
         this.dispatch('on-after-validate', { viewModel: this });
     }
     validateCurrentRecord() {
-        this.records.validateCurrentRecord();
+        this.recordManager.validateCurrentRecord();
         this.dispatch('on-record-validated', { viewModel: this });
     }
     setValidationStatus(field, isValid) {
-        this.records.setValidationStatus(field, isValid);
-        this.isValid = this.records.isValid;
+        this.recordManager.setValidationStatus(field, isValid);
+        this.isValid = this.recordManager.isValid;
     }
     showChildren(rec) {
         this.childMode = true;

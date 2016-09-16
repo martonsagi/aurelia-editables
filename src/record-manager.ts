@@ -1,18 +1,23 @@
 import { Record, RecordState } from './record';
+import { observable } from 'aurelia-framework';
+import { QueryModel } from 'aurelia-editables';
 
-export class RecordManager extends Array<Record> {
+export class RecordManager {
 
     private _template: any;
 
     currentRecord: Record | null;
-    filters: any;
+    queryModel: QueryModel = { filters: []  };
     originalRecords: any;
     validationStatus = {};
     isValid: boolean = true;
 
+    @observable()
+    records: Array<Record>;
+
     constructor(template?: any) {
-        super();
         this._template = template;
+        this.records = new Array<Record>();
     }
 
     current(item: Record) {
@@ -24,22 +29,21 @@ export class RecordManager extends Array<Record> {
 
         for (let row of data) {
             let record = new Record(row);
-            this.push(record);
+            this.records.push(record);
         }
     }
 
     add() {
-        let filters = this.filters.filter.filters,
-            templateData = JSON.parse(JSON.stringify(this._template));
+        let templateData = JSON.parse(JSON.stringify(this._template));
 
         let newRow = new Record(templateData, RecordState.added);
         newRow.isValid = false;
         this.isValid = false;
 
-        this.unshift(newRow);
-        this.current(this[0]);
+        this.records.unshift(newRow);
+        this.current(this.records[0]);
 
-        for (let filter of filters) {
+        for (let filter of this.queryModel.filters) {
             this.currentRecord[filter.field] = filter.value;
         }
 
@@ -47,12 +51,12 @@ export class RecordManager extends Array<Record> {
     }
 
     remove(item: Record) {
-        let i = this.indexOf(item);
+        let i = this.records.indexOf(item);
 
         if (item.state !== RecordState.added) {
             this[i].state = RecordState.deleted;
         } else {
-            this.splice(i, 1);
+            this.records.splice(i, 1);
         }
 
         this.validate();
@@ -62,17 +66,17 @@ export class RecordManager extends Array<Record> {
         let changes = changesOverride || this.getChanges();
         if (changes.deleted.length > 0) {
             for (let row of changes.deleted) {
-                let i = this.indexOf(row);
-                this.splice(i, 1);
+                let i = this.records.indexOf(row);
+                this.records.splice(i, 1);
             }
         }
 
-        for (let row of this) {
+        for (let row of this.records) {
             row.state = RecordState.unchanged;
         }
 
         let originalRows = [];
-        for (let row of this) {
+        for (let row of this.records) {
             let originalRow = {},
                 props: Array<string> = Object.getOwnPropertyNames(this._template);
 
@@ -100,30 +104,31 @@ export class RecordManager extends Array<Record> {
             return false;
         }
 
-        // removing newly added records, so array indexes should be restored
+        // removing newly added recordManager, so array indexes should be restored
         if (changes.added.length > 0) {
             for (let row of changes.added) {
-                let index = this.indexOf(row);
-                this.splice(index, 1);
+                let index = this.records.indexOf(row);
+                this.records.splice(index, 1);
             }
         }
 
-        // restoring modified/deleted records
-        // deleted records should be treated as modified ones,
+        // restoring modified/deleted recordManager
+        // deleted recordManager should be treated as modified ones,
         // because before deletion modifications can occur
         if (changes.deleted.length > 0 || changes.modified.length > 0 ) {
             let rows = changes.modified.concat(changes.deleted);
             let originalRows = JSON.parse(JSON.stringify(this.originalRecords));
 
             for (let row of rows) {
-                let index = this.indexOf(row);
+                let index = this.records.indexOf(row);
                 let originalRecord = new Record(originalRows[index]);
-                this.splice(index, 1, originalRecord);
+                this.records.splice(index, 1, originalRecord);
             }
         }
 
-        if (this.length > 0) {
-            this.currentRecord = this[0];
+        if (this.records.length > 0) {
+            this.currentRecord = this.records[0];
+            this.currentRecord = this.records[0];
         }
     }
 
@@ -136,15 +141,15 @@ export class RecordManager extends Array<Record> {
     }
 
     getChanges() {
-        let modified = this.filter(item => {
+        let modified = this.records.filter(item => {
             return item.state === RecordState.modified;
         });
 
-        let added = this.filter(item => {
+        let added = this.records.filter(item => {
             return item.state === RecordState.added;
         });
 
-        let deleted = this.filter(item => {
+        let deleted = this.records.filter(item => {
             return item.state === RecordState.deleted;
         });
 
@@ -158,7 +163,7 @@ export class RecordManager extends Array<Record> {
 
     validate() {
         this.isValid = true;
-        let rows = this.filter(item => item.state !== RecordState.deleted);
+        let rows = this.records.filter(item => item.state !== RecordState.deleted);
         for (let row of rows) {
             if (row.isValid !== true) {
                 this.isValid = false;

@@ -1,9 +1,9 @@
 "use strict";
 
-System.register(["aurelia-framework", "interact.js"], function (_export, _context) {
+System.register(["aurelia-framework"], function (_export, _context) {
     "use strict";
 
-    var autoinject, bindable, bindingMode, interact, _typeof, __decorate, __metadata, ResizableFieldCustomAttribute;
+    var autoinject, bindable, bindingMode, _typeof, __decorate, __metadata, ResizableFieldCustomAttribute;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -16,8 +16,6 @@ System.register(["aurelia-framework", "interact.js"], function (_export, _contex
             autoinject = _aureliaFramework.autoinject;
             bindable = _aureliaFramework.bindable;
             bindingMode = _aureliaFramework.bindingMode;
-        }, function (_interactJs) {
-            interact = _interactJs;
         }],
         execute: function () {
             _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -54,7 +52,8 @@ System.register(["aurelia-framework", "interact.js"], function (_export, _contex
                 ResizableFieldCustomAttribute.prototype.attached = function attached() {
                     var _this = this;
 
-                    interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', function (event) {
+                    console.log(interact);
+                    window.interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', function (event) {
                         return _this.dispatch('resizable-field-onmove', event);
                     });
                 };

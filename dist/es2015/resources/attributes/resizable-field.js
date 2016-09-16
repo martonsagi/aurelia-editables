@@ -9,7 +9,6 @@ var __metadata = this && this.__metadata || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { autoinject, bindable, bindingMode } from 'aurelia-framework';
-import * as interact from 'interact.js';
 export let ResizableFieldCustomAttribute = class ResizableFieldCustomAttribute {
     constructor(element) {
         this.options = {
@@ -20,7 +19,8 @@ export let ResizableFieldCustomAttribute = class ResizableFieldCustomAttribute {
         this.element = element;
     }
     attached() {
-        interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', event => this.dispatch('resizable-field-onmove', event));
+        console.log(interact);
+        window.interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', event => this.dispatch('resizable-field-onmove', event));
     }
     dispatch(name, data) {
         this.element.dispatchEvent(new CustomEvent(name, {

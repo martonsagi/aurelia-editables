@@ -9,16 +9,10 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 var Config = exports.Config = function Config() {
     _classCallCheck(this, Config);
 
-    this.localization = {
-        defaultLocale: 'en',
-        autoLocale: false,
-        loadPath: './locales/{{lng}}/{{ns}}.json'
-    };
     this.editors = {
         text: './editors/text-editor',
         boolean: './editors/boolean-editor',
         dropdown: './editors/dropdown-editor'
     };
     this.onSetEditor = null;
-    this.onSeti18n = null;
 };

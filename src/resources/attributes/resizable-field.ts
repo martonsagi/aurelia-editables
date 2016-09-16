@@ -5,7 +5,7 @@
 //#region import
 
 import { autoinject, bindable, bindingMode, ComponentAttached } from 'aurelia-framework';
-import * as interact from 'interact.js';
+//import * as interact from 'interact.js';
 
 //#endregion
 
@@ -36,7 +36,8 @@ export class ResizableFieldCustomAttribute implements ComponentAttached {
     //#region au events
 
     attached() {
-        interact(this.element)
+        console.log(interact);
+        (<any>window).interact(this.element)
             .resizable(Object.assign({}, this.options || {}))
             .on('resizemove', (event) => this.dispatch('resizable-field-onmove', event));
     }

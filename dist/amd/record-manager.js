@@ -1,5 +1,5 @@
-define(['exports', './record'], function (exports, _record) {
-    'use strict';
+define(["exports", "./record", "aurelia-framework"], function (exports, _record, _aureliaFramework) {
+    "use strict";
 
     Object.defineProperty(exports, "__esModule", {
         value: true
@@ -12,42 +12,33 @@ define(['exports', './record'], function (exports, _record) {
         }
     }
 
-    function _possibleConstructorReturn(self, call) {
-        if (!self) {
-            throw new ReferenceError("this hasn't been initialised - super() hasn't been called");
-        }
+    var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+        return typeof obj;
+    } : function (obj) {
+        return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+    };
 
-        return call && (typeof call === "object" || typeof call === "function") ? call : self;
-    }
+    var __decorate = undefined && undefined.__decorate || function (decorators, target, key, desc) {
+        var c = arguments.length,
+            r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+            d;
+        if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) {
+            if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+        }return c > 3 && r && Object.defineProperty(target, key, r), r;
+    };
+    var __metadata = undefined && undefined.__metadata || function (k, v) {
+        if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+    };
 
-    function _inherits(subClass, superClass) {
-        if (typeof superClass !== "function" && superClass !== null) {
-            throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
-        }
-
-        subClass.prototype = Object.create(superClass && superClass.prototype, {
-            constructor: {
-                value: subClass,
-                enumerable: false,
-                writable: true,
-                configurable: true
-            }
-        });
-        if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass;
-    }
-
-    var RecordManager = exports.RecordManager = function (_Array) {
-        _inherits(RecordManager, _Array);
-
+    var RecordManager = exports.RecordManager = function () {
         function RecordManager(template) {
             _classCallCheck(this, RecordManager);
 
-            var _this = _possibleConstructorReturn(this, _Array.call(this));
-
-            _this.validationStatus = {};
-            _this.isValid = true;
-            _this._template = template;
-            return _this;
+            this.queryModel = { filters: [] };
+            this.validationStatus = {};
+            this.isValid = true;
+            this._template = template;
+            this.records = new Array();
         }
 
         RecordManager.prototype.current = function current(item) {
@@ -71,19 +62,18 @@ define(['exports', './record'], function (exports, _record) {
                 var row = _ref;
 
                 var record = new _record.Record(row);
-                this.push(record);
+                this.records.push(record);
             }
         };
 
         RecordManager.prototype.add = function add() {
-            var filters = this.filters.filter.filters,
-                templateData = JSON.parse(JSON.stringify(this._template));
+            var templateData = JSON.parse(JSON.stringify(this._template));
             var newRow = new _record.Record(templateData, _record.RecordState.added);
             newRow.isValid = false;
             this.isValid = false;
-            this.unshift(newRow);
-            this.current(this[0]);
-            for (var _iterator2 = filters, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+            this.records.unshift(newRow);
+            this.current(this.records[0]);
+            for (var _iterator2 = this.queryModel.filters, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
                 var _ref2;
 
                 if (_isArray2) {
@@ -103,11 +93,11 @@ define(['exports', './record'], function (exports, _record) {
         };
 
         RecordManager.prototype.remove = function remove(item) {
-            var i = this.indexOf(item);
+            var i = this.records.indexOf(item);
             if (item.state !== _record.RecordState.added) {
                 this[i].state = _record.RecordState.deleted;
             } else {
-                this.splice(i, 1);
+                this.records.splice(i, 1);
             }
             this.validate();
         };
@@ -129,11 +119,11 @@ define(['exports', './record'], function (exports, _record) {
 
                     var row = _ref3;
 
-                    var i = this.indexOf(row);
-                    this.splice(i, 1);
+                    var i = this.records.indexOf(row);
+                    this.records.splice(i, 1);
                 }
             }
-            for (var _iterator4 = this, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+            for (var _iterator4 = this.records, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
                 var _ref4;
 
                 if (_isArray4) {
@@ -150,7 +140,7 @@ define(['exports', './record'], function (exports, _record) {
                 _row.state = _record.RecordState.unchanged;
             }
             var originalRows = [];
-            for (var _iterator5 = this, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
+            for (var _iterator5 = this.records, _isArray5 = Array.isArray(_iterator5), _i5 = 0, _iterator5 = _isArray5 ? _iterator5 : _iterator5[Symbol.iterator]();;) {
                 var _ref5;
 
                 if (_isArray5) {
@@ -214,8 +204,8 @@ define(['exports', './record'], function (exports, _record) {
 
                     var row = _ref7;
 
-                    var index = this.indexOf(row);
-                    this.splice(index, 1);
+                    var index = this.records.indexOf(row);
+                    this.records.splice(index, 1);
                 }
             }
             if (changes.deleted.length > 0 || changes.modified.length > 0) {
@@ -235,13 +225,14 @@ define(['exports', './record'], function (exports, _record) {
 
                     var _row3 = _ref8;
 
-                    var _index = this.indexOf(_row3);
+                    var _index = this.records.indexOf(_row3);
                     var originalRecord = new _record.Record(originalRows[_index]);
-                    this.splice(_index, 1, originalRecord);
+                    this.records.splice(_index, 1, originalRecord);
                 }
             }
-            if (this.length > 0) {
-                this.currentRecord = this[0];
+            if (this.records.length > 0) {
+                this.currentRecord = this.records[0];
+                this.currentRecord = this.records[0];
             }
         };
 
@@ -254,13 +245,13 @@ define(['exports', './record'], function (exports, _record) {
         };
 
         RecordManager.prototype.getChanges = function getChanges() {
-            var modified = this.filter(function (item) {
+            var modified = this.records.filter(function (item) {
                 return item.state === _record.RecordState.modified;
             });
-            var added = this.filter(function (item) {
+            var added = this.records.filter(function (item) {
                 return item.state === _record.RecordState.added;
             });
-            var deleted = this.filter(function (item) {
+            var deleted = this.records.filter(function (item) {
                 return item.state === _record.RecordState.deleted;
             });
             return {
@@ -273,7 +264,7 @@ define(['exports', './record'], function (exports, _record) {
 
         RecordManager.prototype.validate = function validate() {
             this.isValid = true;
-            var rows = this.filter(function (item) {
+            var rows = this.records.filter(function (item) {
                 return item.state !== _record.RecordState.deleted;
             });
             for (var _iterator9 = rows, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
@@ -313,5 +304,7 @@ define(['exports', './record'], function (exports, _record) {
         };
 
         return RecordManager;
-    }(Array);
+    }();
+
+    __decorate([(0, _aureliaFramework.observable)(), __metadata('design:type', Array)], RecordManager.prototype, "records", void 0);
 });

@@ -1,29 +1,10 @@
-define(["exports", "aurelia-framework", "interact.js"], function (exports, _aureliaFramework, _interact) {
+define(["exports", "aurelia-framework"], function (exports, _aureliaFramework) {
     "use strict";
 
     Object.defineProperty(exports, "__esModule", {
         value: true
     });
     exports.ResizableFieldCustomAttribute = undefined;
-
-    var interact = _interopRequireWildcard(_interact);
-
-    function _interopRequireWildcard(obj) {
-        if (obj && obj.__esModule) {
-            return obj;
-        } else {
-            var newObj = {};
-
-            if (obj != null) {
-                for (var key in obj) {
-                    if (Object.prototype.hasOwnProperty.call(obj, key)) newObj[key] = obj[key];
-                }
-            }
-
-            newObj.default = obj;
-            return newObj;
-        }
-    }
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -63,7 +44,8 @@ define(["exports", "aurelia-framework", "interact.js"], function (exports, _aure
         ResizableFieldCustomAttribute.prototype.attached = function attached() {
             var _this = this;
 
-            interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', function (event) {
+            console.log(interact);
+            window.interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', function (event) {
                 return _this.dispatch('resizable-field-onmove', event);
             });
         };

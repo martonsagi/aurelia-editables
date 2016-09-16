@@ -14,7 +14,6 @@ var __metadata = this && this.__metadata || function (k, v) {
     if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 import { autoinject, bindable, bindingMode } from 'aurelia-framework';
-import * as interact from 'interact.js';
 export var ResizableFieldCustomAttribute = function () {
     function ResizableFieldCustomAttribute(element) {
         _classCallCheck(this, ResizableFieldCustomAttribute);
@@ -30,7 +29,8 @@ export var ResizableFieldCustomAttribute = function () {
     ResizableFieldCustomAttribute.prototype.attached = function attached() {
         var _this = this;
 
-        interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', function (event) {
+        console.log(interact);
+        window.interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', function (event) {
             return _this.dispatch('resizable-field-onmove', event);
         });
     };

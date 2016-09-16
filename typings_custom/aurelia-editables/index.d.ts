@@ -155,8 +155,6 @@
         state: string;
     }
 
-    export const RecordState: RecordStateOptions;
-
     export class RecordManager {
         constructor(template?: any);
         current(item: Record);
@@ -174,6 +172,8 @@
         setValidationStatus(field: string, isValid: boolean);
     }
 
+    export const RecordState: RecordStateOptions;
+
     export type RecordStateOptions = {
         added: string;
         unchanged: string;
@@ -183,51 +183,10 @@
 
     //#endregion
 
-    export type i18nSetup = {
-        backend?: BackendOptions;
-        lng?: string;
-        defaultNS?: string;
-        ns?: string;
-        attributes?: Array<string>;
-        fallbackLng?: string;
-        debug?: boolean;
-    };
-
-    export type BackendOptions = {
-        loadPath?: string | Function,
-        addPath?:  string,
-        allowMultiLoading?: boolean,
-        parse?: () => {},
-        crossDomain?: boolean,
-        ajax?: () => void
+    export class Config {
+        api: any;
+        apiBaseUrl: string;
+        editors: any;
+        onSetEditor: any;
     }
-
 }
-
-//#region i18n
-
-declare module 'i18next-xhr-backend' {
-
-    import { BackendOptions } from 'aurelia-editables';
-
-    interface Interpolator {
-        interpolate: () => string
-    }
-    interface Services {
-        interpolator: Interpolator
-    }
-
-    /*export default class Backend {
-        type: 'backend';
-        services: Services;
-        options: BackendOptions;
-        constructor(services: Services, options?: {});
-        init(services: Services, options?: {}): void;
-        readMulti(languages: any[], namespaces: any[], callback: () => void): void;
-        read(language: {}, namespace: {}, callback: () => void): void;
-        loadUrl(url: string, callback: () => void): void;
-        create(languages: any[], namespace: string, key: string, fallbackValue: string): void;
-    }*/
-}
-
-//#endregion

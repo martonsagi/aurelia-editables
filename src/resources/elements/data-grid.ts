@@ -17,7 +17,7 @@ export class DataGrid {
 
     @bindable options: DataObjectViewModel;
 
-    @bindable records: RecordManager | null = new RecordManager();
+    @bindable records: any;
 
     @bindable currentRecord: Record | null = null;
 
@@ -53,7 +53,7 @@ export class DataGrid {
         'on-record-remove': null,
         'on-record-changed': null,
         'on-record-validated': null,
-        'on-records-changed': null,
+        'on-recordManager-changed': null,
         'on-before-validate': null,
         'on-after-validate': null,
         'on-before-save-': null,
@@ -73,6 +73,7 @@ export class DataGrid {
 
     //#region Properties
 
+    recordManager: RecordManager | null = new RecordManager();
     element: Element;
     loader: any;
     table: any;
@@ -106,10 +107,10 @@ export class DataGrid {
         this.pluginConfig = Container.instance.get(Config);
         this.apiClass = this.pluginConfig.api;
 
-        let locator = <BindingEngine>Container.instance.get(BindingEngine);
-        locator
-            .collectionObserver(this.records)
-            .subscribe(this.onRecordsChange.bind(this));
+        //let locator = <BindingEngine>Container.instance.get(BindingEngine);
+        //locator
+        //    .collectionObserver(this.recordManager.records)
+        //    .subscribe(this.onRecordsChange.bind(this));
 
         this.dispatch('on-created', { viewModel: this });
     }
@@ -200,11 +201,12 @@ export class DataGrid {
 
                 t.total = result.total;
 
-                t.records = new RecordManager(t.entity);
-                t.records.filters = t.queryModel;
-                t.records.load(result.data);
+                t.recordManager = new RecordManager(t.entity);
+                console.log(t.recordManager);
+                t.recordManager.queryModel = t.queryModel;
+                t.recordManager.load(result.data);
 
-                t.select(t.records[0]);
+                t.select(t.recordManager[0]);
                 //setTimeout(() => t.loading = false, 1000);
                 t.loading = false;
 
@@ -220,10 +222,8 @@ export class DataGrid {
         let width = table.style.width > tableContainer.style.width ? tableContainer.style.width : table.style.width,
             height = table.style.height > tableContainer.style.height ? tableContainer.style.height : table.style.height;
 
-        loader.css({
-            'width': width + 'px',
-            'height': height + 'px',
-        });
+        loader.style.width = width + 'px';
+        loader.style.height = height + 'px';
 
         loader.querySelector('.spinner').style.marginTop = (tableContainer.style.height / 2) + 'px';
     }
@@ -364,8 +364,8 @@ export class DataGrid {
         if (this.currentRecord)
             this.currentRecord.editMode = false;
 
-        this.records.current(rec);
-        this.currentRecord = this.records.currentRecord;
+        this.recordManager.current(rec);
+        this.currentRecord = this.recordManager.currentRecord;
 
         if (this.currentRecord)
             this.currentRecord.editMode = this.editMode;
@@ -397,13 +397,13 @@ export class DataGrid {
     //#region Editing features
 
     add() {
-        this.records.add();
+        this.recordManager.add();
 
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
         this.isValid = false;
 
-        this.select(this.records.currentRecord);
+        this.select(this.recordManager.currentRecord);
         this.dispatch('on-record-add', { viewModel: this });
     }
 
@@ -431,7 +431,7 @@ export class DataGrid {
     remove(item: Record) {
         this.dispatch('on-record-remove', { viewModel: this, record: item });
 
-        this.records.remove(item);
+        this.recordManager.remove(item);
     }
 
     save() {
@@ -473,7 +473,7 @@ export class DataGrid {
         let reqs = Promise.all(tasks);
 
         reqs.then(() => {
-            t.records.save(changes);
+            t.recordManager.save(changes);
 
             if (changes.added.length > 0) {
                 t.total += changes.added.length;
@@ -493,7 +493,7 @@ export class DataGrid {
     }
 
     cancel(showConfirm: boolean | null) {
-        let isDirty = this.records.dirty();
+        let isDirty = this.recordManager.dirty();
 
         if (showConfirm === true && isDirty === true) {
             if (!confirm('You have unsaved changes. Are you sure you wish to leave?')) {
@@ -505,12 +505,12 @@ export class DataGrid {
         this.dispatch('on-before-cancel', { viewModel: this, changes: changes });
 
         if (isDirty === true)
-            this.records.cancel();
+            this.recordManager.cancel();
 
         this.editMode = false;
         if (this.currentRecord) {
             this.currentRecord.editMode = false;
-            this.select(this.records.currentRecord);
+            this.select(this.recordManager.currentRecord);
         }
 
         this.formMode = false;
@@ -525,15 +525,15 @@ export class DataGrid {
     }
 
     getChanges() {
-        let modified = this.records.filter(item => {
+        let modified = this.recordManager.records.filter(item => {
             return item.state === RecordState.modified;
         });
 
-        let added = this.records.filter(item => {
+        let added = this.recordManager.records.filter(item => {
             return item.state === RecordState.added;
         });
 
-        let deleted = this.records.filter(item => {
+        let deleted = this.recordManager.records.filter(item => {
             return item.state === RecordState.deleted;
         });
 
@@ -552,20 +552,20 @@ export class DataGrid {
     validate() {
         this.dispatch('on-before-validate', { viewModel: this });
 
-        this.records.validate();
+        this.recordManager.validate();
 
         this.dispatch('on-after-validate', { viewModel: this });
     }
 
     validateCurrentRecord() {
-        this.records.validateCurrentRecord();
+        this.recordManager.validateCurrentRecord();
 
         this.dispatch('on-record-validated', { viewModel: this });
     }
 
     setValidationStatus(field, isValid) {
-        this.records.setValidationStatus(field, isValid);
-        this.isValid = this.records.isValid;
+        this.recordManager.setValidationStatus(field, isValid);
+        this.isValid = this.recordManager.isValid;
     }
 
     //#endregion

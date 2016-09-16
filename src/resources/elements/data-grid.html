@@ -149,7 +149,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class.bind="item === records.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" repeat.for="item of records" click.delegate="select(item)">
+                    <tr class.bind="item === records.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" repeat.for="item of recordManager.records" click.delegate="select(item)">
                         <td if.bind="options.editing === true || options.children.length > 0">
                             <button if.bind="options.children.length > 0" class="btn btn-sm btn-default" click.delegate="showChildren(item, $event)">
                                 <i class="fa fa-table"></i>
@@ -180,7 +180,7 @@
         <!-- /Data area -->
 
         <!-- Footer, pager -->
-        <div class="table-footer">
+        <div class="table-footer" show.bind="!formMode">
             <pager class="pull-left" if.bind="options.paging !== false" ref="pager" count.bind="total" size.bind="pageSettings.size"></pager>
 
             <span class="clearfix"></span>
