@@ -43,7 +43,7 @@ export let RecordManager = class RecordManager {
     remove(item) {
         let i = this.records.indexOf(item);
         if (item.state !== RecordState.added) {
-            this[i].state = RecordState.deleted;
+            this.records[i].state = RecordState.deleted;
         } else {
             this.records.splice(i, 1);
         }
@@ -98,7 +98,6 @@ export let RecordManager = class RecordManager {
             }
         }
         if (this.records.length > 0) {
-            this.currentRecord = this.records[0];
             this.currentRecord = this.records[0];
         }
     }

@@ -90,7 +90,7 @@ var RecordManager = exports.RecordManager = function () {
     RecordManager.prototype.remove = function remove(item) {
         var i = this.records.indexOf(item);
         if (item.state !== _record.RecordState.added) {
-            this[i].state = _record.RecordState.deleted;
+            this.records[i].state = _record.RecordState.deleted;
         } else {
             this.records.splice(i, 1);
         }
@@ -226,7 +226,6 @@ var RecordManager = exports.RecordManager = function () {
             }
         }
         if (this.records.length > 0) {
-            this.currentRecord = this.records[0];
             this.currentRecord = this.records[0];
         }
     };

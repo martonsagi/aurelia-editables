@@ -15,7 +15,7 @@
         "editable",
         "typescript"
     ],
-    "main": "dist/aurelia-editables.js",
+    "main": "dist/amd/aurelia-editables.js",
     "typings": "dist/aurelia-editables.d.ts",
     "repository": {
         "type": "git",
