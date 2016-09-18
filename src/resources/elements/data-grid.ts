@@ -17,8 +17,6 @@ export class DataGrid {
 
     @bindable options: DataObjectViewModel;
 
-    @bindable records: any;
-
     @bindable currentRecord: Record | null = null;
 
     @bindable parentRecord: Record | null = null;
@@ -219,13 +217,13 @@ export class DataGrid {
             tableContainer = this.tableContainer,
             loader = this.loader;
 
-        let width = table.style.width > tableContainer.style.width ? tableContainer.style.width : table.style.width,
-            height = table.style.height > tableContainer.style.height ? tableContainer.style.height : table.style.height;
+        let width = table.offsetWidth > tableContainer.offsetWidth ? tableContainer.offsetWidth : table.offsetWidth,
+            height = table.offsetHeight > tableContainer.offsetHeight ? tableContainer.offsetHeight : table.offsetHeight;
 
         loader.style.width = width + 'px';
         loader.style.height = height + 'px';
 
-        loader.querySelector('.spinner').style.marginTop = (tableContainer.style.height / 2) + 'px';
+        loader.querySelector('.spinner').style.marginTop = (tableContainer.offsetHeight / 2) + 'px';
     }
 
     loadColumns() {

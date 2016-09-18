@@ -149,7 +149,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class.bind="item === records.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" repeat.for="item of recordManager.records" click.delegate="select(item)">
+                    <tr class.bind="item === recordManager.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" repeat.for="item of recordManager.records" click.delegate="select(item)">
                         <td if.bind="options.editing === true || options.children.length > 0">
                             <button if.bind="options.children.length > 0" class="btn btn-sm btn-default" click.delegate="showChildren(item, $event)">
                                 <i class="fa fa-table"></i>

@@ -152,11 +152,11 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                     var table = this.table,
                         tableContainer = this.tableContainer,
                         loader = this.loader;
-                    var width = table.style.width > tableContainer.style.width ? tableContainer.style.width : table.style.width,
-                        height = table.style.height > tableContainer.style.height ? tableContainer.style.height : table.style.height;
+                    var width = table.offsetWidth > tableContainer.offsetWidth ? tableContainer.offsetWidth : table.offsetWidth,
+                        height = table.offsetHeight > tableContainer.offsetHeight ? tableContainer.offsetHeight : table.offsetHeight;
                     loader.style.width = width + 'px';
                     loader.style.height = height + 'px';
-                    loader.querySelector('.spinner').style.marginTop = tableContainer.style.height / 2 + 'px';
+                    loader.querySelector('.spinner').style.marginTop = tableContainer.offsetHeight / 2 + 'px';
                 };
 
                 DataGrid.prototype.loadColumns = function loadColumns() {
@@ -494,7 +494,6 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
             _export("DataGrid", DataGrid);
 
             __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "options", void 0);
-            __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "records", void 0);
             __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "currentRecord", void 0);
             __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "parentRecord", void 0);
             __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "entity", void 0);
