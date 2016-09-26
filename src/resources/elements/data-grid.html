@@ -11,7 +11,7 @@
                         <a href="#" click.delegate="hideChildren($event)" title="${'Back' | t}">
                             <i class="fa fa-caret-left"></i> ${'Back' | t} -
                             <span repeat.for="fieldName of options.children[0].childOptions.titleFieldNames">
-                                ${currentRecord[fieldName]}${!$last ? ',' : ''}
+                                ${recordManager.currentRecord[fieldName]}${!$last ? ',' : ''}
                             </span>
                         </a>
                     </li>
@@ -24,7 +24,7 @@
                 <div class="tab-content">
                     <div role="tabpanel" class="tab-pane ${$first ? 'active' : ''}" id="${child.name}" repeat.for="child of options.children">
 
-                        <data-grid parent-record.bind="currentRecord"
+                        <data-grid parent-record.bind="recordManager.currentRecord"
                                    options.bind="child"
                                    can-load.bind="childMode"></data-grid>
 
@@ -93,18 +93,18 @@
         <!-- /Toolbar -->
 
         <!-- Edit Form -->
-        <div if.bind="formMode">
+        <div show.bind="formMode">
             <div class="panel-body">
                 <data-form show-toolbar.bind="false"
                            integrated-mode.bind="true"
-                           record.two-way="currentRecord"
+                           record.two-way="recordManager.currentRecord"
                            options.bind="options" />
             </div>
         </div>
         <!-- /Edit Form -->
 
         <!-- Data area -->
-        <div ref="tableContainer" class="table-responsive" show.bind="!formMode">
+        <div ref="tableContainer" class="table-responsive_off" show.bind="!formMode">
             <div show.bind="loading" ref="loader" style="position: absolute; background: rgba(255,255,255,0.3)">
                 <div class="spinner" style="margin: 0 auto;">
                     <div style="background-color: #222" class="bounce1"></div>
@@ -149,7 +149,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class.bind="item === recordManager.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" repeat.for="item of recordManager.records" click.delegate="select(item)">
+                    <tr class.bind="item === recordManager.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" virtual-repeat.for="item of recordManager.records" click.delegate="select(item)">
                         <td if.bind="options.editing === true || options.children.length > 0">
                             <button if.bind="options.children.length > 0" class="btn btn-sm btn-default" click.delegate="showChildren(item, $event)">
                                 <i class="fa fa-table"></i>
