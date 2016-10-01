@@ -104,7 +104,7 @@
         <!-- /Edit Form -->
 
         <!-- Data area -->
-        <div ref="tableContainer" class="table-responsive_off" show.bind="!formMode">
+        <div ref="tableContainer" class="table-responsive" show.bind="!formMode">
             <div show.bind="loading" ref="loader" style="position: absolute; background: rgba(255,255,255,0.3)">
                 <div class="spinner" style="margin: 0 auto;">
                     <div style="background-color: #222" class="bounce1"></div>
@@ -149,7 +149,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr class.bind="item === recordManager.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" virtual-repeat.for="item of recordManager.records" click.delegate="select(item)">
+                    <tr class.bind="item === recordManager.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" repeat.for="item of recordManager.records" click.delegate="select(item)">
                         <td if.bind="options.editing === true || options.children.length > 0">
                             <button if.bind="options.children.length > 0" class="btn btn-sm btn-default" click.delegate="showChildren(item, $event)">
                                 <i class="fa fa-table"></i>
