@@ -105,7 +105,7 @@ export class RecordManager {
             return false;
         }
 
-        // removing newly added recordManager, so array indexes should be restored
+        // removing newly added records, so array indexes should be restored
         if (changes.added.length > 0) {
             for (let row of changes.added) {
                 let index = this.records.indexOf(row);
@@ -113,8 +113,8 @@ export class RecordManager {
             }
         }
 
-        // restoring modified/deleted recordManager
-        // deleted recordManager should be treated as modified ones,
+        // restoring modified/deleted records
+        // deleted records should be treated as modified ones,
         // because before deletion modifications can occur
         if (changes.deleted.length > 0 || changes.modified.length > 0 ) {
             let rows = changes.modified.concat(changes.deleted);

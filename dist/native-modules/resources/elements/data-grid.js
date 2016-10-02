@@ -441,6 +441,7 @@ export var DataGrid = function () {
             x = parseFloat(target.getAttribute('data-x')) || 0,
             y = parseFloat(target.getAttribute('data-y')) || 0,
             data = target.dataset;
+        if (column.resizing === false) return;
         if (event.rect.width < 100) return;
         column.width = event.rect.width;
         x += event.deltaRect.left;

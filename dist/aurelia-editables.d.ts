@@ -121,8 +121,10 @@ declare module 'aurelia-editables' {
         groupId?: number | null;
         filter?: DataObjectFieldFilterViewModel;
         editor?: DataObjectFieldEditorViewModel;
+        resizing?: boolean;
         validation?: any;
         validationMode?: string;
+        width?: number;
     }
 
     export type DataObjectFieldFilterViewModel = {

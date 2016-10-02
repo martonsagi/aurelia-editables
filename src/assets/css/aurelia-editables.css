@@ -26,6 +26,7 @@
 }
 .data-grid th .column-header {
   min-width: 100px;
+  width: 150px;
   margin-right: 5px;
   cursor: pointer;
 }
