@@ -34,6 +34,7 @@ var RecordManager = exports.RecordManager = function () {
         this.isValid = true;
         this._template = template;
         this.records = new Array();
+        this.currentRecord = {};
     }
 
     RecordManager.prototype.current = function current(item) {
@@ -227,6 +228,8 @@ var RecordManager = exports.RecordManager = function () {
         }
         if (this.records.length > 0) {
             this.currentRecord = this.records[0];
+        } else {
+            this.currentRecord = {};
         }
     };
 

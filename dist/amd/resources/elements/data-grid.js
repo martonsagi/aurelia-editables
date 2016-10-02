@@ -125,7 +125,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                 console.log(t.recordManager);
                 t.recordManager.queryModel = t.queryModel;
                 t.recordManager.load(result.data);
-                t.select(t.recordManager[0]);
+                t.select(t.recordManager.records[0]);
                 t.loading = false;
                 _this2.dispatch('on-after-load', { viewModel: t });
             });
@@ -446,20 +446,16 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.refresh();
         };
 
-        DataGrid.prototype.resizeColumn = function resizeColumn(customEvent) {
+        DataGrid.prototype.resizeColumn = function resizeColumn(customEvent, column) {
             var event = customEvent.detail,
                 target = event.target,
                 x = parseFloat(target.getAttribute('data-x')) || 0,
                 y = parseFloat(target.getAttribute('data-y')) || 0,
                 data = target.dataset;
             if (event.rect.width < 100) return;
-            target.style.width = event.rect.width + 'px';
-            var selector = ".td-" + data.col;
-            target.style.width = event.rect.width;
-            target.style.maxWidth = event.rect.width + 'px';
+            column.width = event.rect.width;
             x += event.deltaRect.left;
             y += event.deltaRect.top;
-            target.style.webkitTransform = target.style.transform = 'translate(' + x + 'px,' + y + 'px)';
             target.setAttribute('data-x', x);
             target.setAttribute('data-y', y);
         };

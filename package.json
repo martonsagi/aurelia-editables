@@ -1,6 +1,6 @@
 {
     "name": "aurelia-editables",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "author": "Marton Sagi <hello@martonsagi.me>",
     "description": "Configuration-based data editor (Datagrid and Forms) plugin for Aurelia (http://aurelia.io/) ",
     "homepage": "https://github.com/martonsagi/aurelia-editables",
@@ -20,6 +20,15 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/martonsagi/aurelia-editables"
+    },
+    "dependencies": {
+        "interact.js": "^1.2.6",
+        "font-awesome": "^4.6.3",
+        "animate.css": "^3.5.2",
+        "aurelia-http-client": "^1.0.0",
+        "aurelia-i18n": "^1.1.2",
+        "aurelia-validation": "^0.12.5",
+        "i18next-xhr-backend": "^1.2.0"
     },
     "devDependencies": {
         "aurelia-tools": "^0.2.4",

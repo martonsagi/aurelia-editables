@@ -3,8 +3,7 @@
 /* DataGrid colors */
 /* DataGrid control */
 .data-grid .table-responsive {
-  min-height: 400px;
-  max-height: 600px;
+  height: 400px;
 }
 .data-grid .table-toolbar {
   margin: 0 0 15px;
@@ -12,9 +11,6 @@
 .data-grid table {
   width: auto;
   margin-bottom: 0px;
-}
-.data-grid thead th > div > div {
-  cursor: pointer;
 }
 .data-grid,
 .data-grid td,
@@ -25,14 +21,21 @@
 .data-grid th .boolean-content {
   text-align: center;
 }
+.data-grid th {
+  border-right: 2px solid #ddd;
+}
+.data-grid th .column-header {
+  min-width: 100px;
+  margin-right: 5px;
+  cursor: pointer;
+}
 .data-grid td {
   white-space: nowrap;
   overflow: hidden;
   -ms-text-overflow: ellipsis;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
-  width: 150px;
-  max-width: 150px;
+  min-width: 100px;
 }
 .data-grid td .field-content {
   padding: 5px 0 2px;

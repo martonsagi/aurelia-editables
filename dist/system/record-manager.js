@@ -47,6 +47,7 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                     this.isValid = true;
                     this._template = template;
                     this.records = new Array();
+                    this.currentRecord = {};
                 }
 
                 RecordManager.prototype.current = function current(item) {
@@ -240,6 +241,8 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                     }
                     if (this.records.length > 0) {
                         this.currentRecord = this.records[0];
+                    } else {
+                        this.currentRecord = {};
                     }
                 };
 

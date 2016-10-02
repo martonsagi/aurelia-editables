@@ -1,7 +1,7 @@
 ﻿//#region import
 
 import { bindable, autoinject, ViewCompiler, Container, BindingEngine } from 'aurelia-framework';
-import { DataObjectViewModel, DataObjectPagingViewModel, QueryModel } from 'aurelia-editables';
+import { DataObjectViewModel, DataObjectPagingViewModel, QueryModel, DataObjectFieldViewModel } from 'aurelia-editables';
 import { Config } from '../../config';
 import { Api } from '../../api';
 import { Pager } from './pager';
@@ -204,7 +204,7 @@ export class DataGrid {
                 t.recordManager.queryModel = t.queryModel;
                 t.recordManager.load(result.data);
 
-                t.select(t.recordManager[0]);
+                t.select(t.recordManager.records[0]);
                 //setTimeout(() => t.loading = false, 1000);
                 t.loading = false;
 
@@ -587,30 +587,25 @@ export class DataGrid {
 
     //#region Column resizing
 
-    resizeColumn(customEvent) {
+    resizeColumn(customEvent, column: DataObjectFieldViewModel) {
         let event = customEvent.detail,
             target = event.target,
             x = (parseFloat(target.getAttribute('data-x')) || 0),
             y = (parseFloat(target.getAttribute('data-y')) || 0),
             data = target.dataset;
 
+        if (column.resizing === false)
+            return;
+
         if (event.rect.width < 100)
             return;
 
         // update the element's style
-        target.style.width = event.rect.width + 'px';
-        //target.style.height = event.rect.height + 'px';
-
-        let selector = `.td-${data.col}`;
-        target.style.width = event.rect.width
-        target.style.maxWidth = event.rect.width + 'px';
+        column.width = event.rect.width;
 
         // translate when resizing from top or left edges
         x += event.deltaRect.left;
         y += event.deltaRect.top;
-
-        target.style.webkitTransform = target.style.transform =
-            'translate(' + x + 'px,' + y + 'px)';
 
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);

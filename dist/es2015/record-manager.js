@@ -17,6 +17,7 @@ export let RecordManager = class RecordManager {
         this.isValid = true;
         this._template = template;
         this.records = new Array();
+        this.currentRecord = {};
     }
     current(item) {
         this.currentRecord = item;
@@ -99,6 +100,8 @@ export let RecordManager = class RecordManager {
         }
         if (this.records.length > 0) {
             this.currentRecord = this.records[0];
+        } else {
+            this.currentRecord = {};
         }
     }
     setOriginal(data) {

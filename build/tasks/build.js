@@ -108,8 +108,8 @@ gulp.task('build-native-modules', function () {
 gulp.task('build', function (callback) {
     return runSequence(
         'clean',
-        ['build-ts', 'build-dts'],
-        ['build-less', 'build-css', 'build-html', 'build-es2015', 'build-commonjs', 'build-amd', 'build-system', 'build-native-modules'],
+        ['build-ts', 'build-dts', 'build-less'],
+        ['build-css', 'build-html', 'build-es2015', 'build-commonjs', 'build-amd', 'build-system', 'build-native-modules'],
         callback
     );
 });

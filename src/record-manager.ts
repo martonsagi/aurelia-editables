@@ -18,6 +18,7 @@ export class RecordManager {
     constructor(template?: any) {
         this._template = template;
         this.records = new Array<Record>();
+        this.currentRecord = (<any>{});
     }
 
     current(item: Record) {
@@ -128,6 +129,8 @@ export class RecordManager {
 
         if (this.records.length > 0) {
             this.currentRecord = this.records[0];
+        } else {
+            this.currentRecord = (<any>{});
         }
     }
 

@@ -123,16 +123,18 @@
                         <th style="width: 100px;" if.bind="options.editing === true || options.children.length > 0">
                             <div ></div>
                         </th>
-                        <th id="th-${column.name}" show.bind="column.hide !== true" repeat.for="column of options.columns">
-                            <div data-col="${column.name}" style="width: 150px; border-right: 5px double #ddd;padding-right: 0px;"
-                                 resizable-field
-                                 resizable-field-onmove.delegate="resizeColumn($event)">
-                                <div class="${column.type+'-content'}" click.delegate="sort(column.name)" style="margin-right: 15px">
-                                    <span>${column.title ? column.title : column.name | t}</span>
-                                    <i if.bind="sortSettings.field === column.name" class="pull-right data-grid-sorter fa ${sortSettings.dir === 'asc' ? 'fa-sort-asc' : 'fa-sort-desc'}"></i>
-                                    <i if.bind="sortSettings.field !== column.name" class="text-light-grey data-grid-sorter pull-right fa fa-sort"></i>
-                                    <span class="clearfix"></span>
-                                </div>
+                        <th id="th-${column.name}"
+                            css="width: ${column.width ? column.width+'px' : 'inherit'}"
+                            show.bind="column.hide !== true"
+                            resizable-field
+                            resizable-field-onmove.delegate="resizeColumn($event, column)"
+                            repeat.for="column of options.columns">
+
+                            <div class="${column.type+'-content'} column-header" click.delegate="sort(column.name)">
+                                <span>${column.title ? column.title : column.name | t}</span>
+                                <i if.bind="sortSettings.field === column.name" class="pull-right data-grid-sorter fa ${sortSettings.dir === 'asc' ? 'fa-sort-asc' : 'fa-sort-desc'}"></i>
+                                <i if.bind="sortSettings.field !== column.name" class="text-light-grey data-grid-sorter pull-right fa fa-sort"></i>
+                                <span class="clearfix"></span>
                             </div>
                         </th>
                     </tr>
@@ -140,7 +142,7 @@
                         <th if.bind="options.editing === true"></th>
                         <th show.bind="column.hide !== true" repeat.for="column of options.columns">
                             <div if.bind="column.filter !== false" class="form-material">
-                                <input class="form-control filter-input" value.bind="$parent.columnFilters[column.name]" keyup.delegate="setFilter(column.name) & debounce:300" placeholder="${'Filter...' | t}" />
+                                <input class="form-control filter-input" value.bind="columnFilters[column.name]" keyup.delegate="setFilter(column.name) & debounce:300" placeholder="${'Filter...' | t}" />
                                 <!-- button class="btn btn-sm btn-default">
                                     <i class="fa fa-bars"></i>
                                 </button -->
@@ -164,7 +166,11 @@
                             </button>
 
                         </td>
-                        <td class="td-${column.name}" show.bind="column.hide !== true" repeat.for="column of options.columns">
+                        <td class="td-${column.name}"
+                            css="width: ${column.width ? column.width+'px' : 'inherit'}"
+                            show.bind="column.hide !== true"
+                            repeat.for="column of options.columns">
+
                             <field options.bind="column"
                                    integrated-mode.bind="true"
                                    edit-mode.bind="item.editMode"

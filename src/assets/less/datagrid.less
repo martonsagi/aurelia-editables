@@ -5,8 +5,7 @@
 
 .data-grid {
     .table-responsive {
-        min-height: 400px;
-        max-height: 600px;
+        height: 400px;
     }
     
     .table-toolbar {
@@ -21,10 +20,6 @@
         margin-bottom: 0px;
     }
 
-    thead th > div > div {
-        cursor: pointer;
-    }
-
     &,
     td,
     .form-control {
@@ -37,10 +32,19 @@
         }
     }
 
+    th {
+        border-right: 2px solid #ddd;
+
+        .column-header {
+            min-width: 100px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+    }
+
     td {
         .text-overflow();
-        width: 150px;
-        max-width: 150px;
+        min-width: 100px;
 
         .field-content {
             padding: 5px 0 2px;
