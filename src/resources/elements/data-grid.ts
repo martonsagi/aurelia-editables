@@ -74,7 +74,7 @@ export class DataGrid {
     recordManager: RecordManager | null = new RecordManager();
     element: Element;
     loader: any;
-    table: any;
+    tableBody: any;
     tableContainer: any;
 
     api: Api;
@@ -89,7 +89,8 @@ export class DataGrid {
     
     pageSettings: DataObjectPagingViewModel = { current: 1, size: 10 };
     pager: any;
-    total;
+    total: number;
+    tableHeaderScroll: HTMLElement;
 
     validationStatus = {};
     isValid = true;
@@ -213,7 +214,7 @@ export class DataGrid {
     }
 
     setLoader() {
-        let table = this.table,
+        let table = this.tableBody,
             tableContainer = this.tableContainer,
             loader = this.loader;
 
@@ -601,7 +602,7 @@ export class DataGrid {
             return;
 
         // update the element's style
-        column.width = event.rect.width;
+        column.width = event.rect.width-16;
 
         // translate when resizing from top or left edges
         x += event.deltaRect.left;
@@ -614,6 +615,10 @@ export class DataGrid {
     //#endregion
 
     //#region Events
+
+    onScroll(event) {
+        this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;
+    }
 
     dispatch(name, data) {
         this.element.dispatchEvent(

@@ -102,7 +102,7 @@ export let DataGrid = class DataGrid {
         });
     }
     setLoader() {
-        let table = this.table,
+        let table = this.tableBody,
             tableContainer = this.tableContainer,
             loader = this.loader;
         let width = table.offsetWidth > tableContainer.offsetWidth ? tableContainer.offsetWidth : table.offsetWidth,
@@ -356,11 +356,14 @@ export let DataGrid = class DataGrid {
             data = target.dataset;
         if (column.resizing === false) return;
         if (event.rect.width < 100) return;
-        column.width = event.rect.width;
+        column.width = event.rect.width - 16;
         x += event.deltaRect.left;
         y += event.deltaRect.top;
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
+    }
+    onScroll(event) {
+        this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;
     }
     dispatch(name, data) {
         this.element.dispatchEvent(new CustomEvent(name, {

@@ -132,7 +132,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
         };
 
         DataGrid.prototype.setLoader = function setLoader() {
-            var table = this.table,
+            var table = this.tableBody,
                 tableContainer = this.tableContainer,
                 loader = this.loader;
             var width = table.offsetWidth > tableContainer.offsetWidth ? tableContainer.offsetWidth : table.offsetWidth,
@@ -454,11 +454,15 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                 data = target.dataset;
             if (column.resizing === false) return;
             if (event.rect.width < 100) return;
-            column.width = event.rect.width;
+            column.width = event.rect.width - 16;
             x += event.deltaRect.left;
             y += event.deltaRect.top;
             target.setAttribute('data-x', x);
             target.setAttribute('data-y', y);
+        };
+
+        DataGrid.prototype.onScroll = function onScroll(event) {
+            this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;
         };
 
         DataGrid.prototype.dispatch = function dispatch(name, data) {
