@@ -30,10 +30,10 @@ export var DataGrid = function () {
         this.childMode = false;
         this.canLoad = false;
         this.showToolbar = true;
+        this.filterVisible = false;
         this.recordManager = new RecordManager();
         this.queryModel = { filters: [] };
         this.columnFilters = null;
-        this.filterVisible = false;
         this.sortSettings = null;
         this.pageSettings = { current: 1, size: 10 };
         this.validationStatus = {};
@@ -111,7 +111,6 @@ export var DataGrid = function () {
             }
             t.total = result.total;
             t.recordManager = new RecordManager(t.entity);
-            console.log(t.recordManager);
             t.recordManager.queryModel = t.queryModel;
             t.recordManager.load(result.data);
             t.select(t.recordManager.records[0]);
@@ -473,4 +472,5 @@ __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "childMode", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
+__decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
 DataGrid = __decorate([autoinject, __metadata('design:paramtypes', [Element, ViewCompiler])], DataGrid);

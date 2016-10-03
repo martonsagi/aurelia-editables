@@ -42,10 +42,10 @@ var DataGrid = exports.DataGrid = function () {
         this.childMode = false;
         this.canLoad = false;
         this.showToolbar = true;
+        this.filterVisible = false;
         this.recordManager = new _recordManager.RecordManager();
         this.queryModel = { filters: [] };
         this.columnFilters = null;
-        this.filterVisible = false;
         this.sortSettings = null;
         this.pageSettings = { current: 1, size: 10 };
         this.validationStatus = {};
@@ -123,7 +123,6 @@ var DataGrid = exports.DataGrid = function () {
             }
             t.total = result.total;
             t.recordManager = new _recordManager.RecordManager(t.entity);
-            console.log(t.recordManager);
             t.recordManager.queryModel = t.queryModel;
             t.recordManager.load(result.data);
             t.select(t.recordManager.records[0]);
@@ -485,4 +484,5 @@ __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], Dat
 __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "childMode", void 0);
 __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
 __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
+__decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
 exports.DataGrid = DataGrid = __decorate([_aureliaFramework.autoinject, __metadata('design:paramtypes', [Element, _aureliaFramework.ViewCompiler])], DataGrid);

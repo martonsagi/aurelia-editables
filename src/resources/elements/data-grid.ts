@@ -35,6 +35,8 @@ export class DataGrid {
 
     @bindable showToolbar: boolean = true;
 
+    @bindable filterVisible: boolean = false;
+
     //#endregion
 
     //#region Bindable events
@@ -84,7 +86,6 @@ export class DataGrid {
 
     queryModel: QueryModel = { filters: []  };
     columnFilters: Array<any> = null;
-    filterVisible = false;
     sortSettings = null;
     
     pageSettings: DataObjectPagingViewModel = { current: 1, size: 10 };
@@ -201,7 +202,6 @@ export class DataGrid {
                 t.total = result.total;
 
                 t.recordManager = new RecordManager(t.entity);
-                console.log(t.recordManager);
                 t.recordManager.queryModel = t.queryModel;
                 t.recordManager.load(result.data);
 
@@ -520,7 +520,6 @@ export class DataGrid {
 
     onRecordsChange(splice) {
         this.dispatch('on-records-changed', { viewModel: this, changes: splice });
-        //console.log("Records changed");
     }
 
     getChanges() {

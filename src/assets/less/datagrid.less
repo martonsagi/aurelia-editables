@@ -15,6 +15,20 @@
     .table-footer {
     }
 
+    .data-grid-loader {
+        position: absolute;
+        background: rgba(255,255,255,0.3);
+    }
+
+    .data-grid-header {
+        overflow: hidden;
+        margin-right: 18px;
+    }
+
+    .data-grid-body {
+        overflow: auto;
+    }
+
     table {
         width: auto;
         margin-bottom: 0px;
@@ -71,6 +85,12 @@
         
     tbody tr.active>td {
         background-color: @bg-datagrid-active;
+    }
+
+    tr.filter-row {
+        th {
+            border: none;
+        }
     }
 }
 

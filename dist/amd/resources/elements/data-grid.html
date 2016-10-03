@@ -105,7 +105,7 @@
 
         <!-- Data area -->
         <div ref="tableContainer" show.bind="!formMode">
-            <div show.bind="loading" ref="loader" style="position: absolute; background: rgba(255,255,255,0.3)">
+            <div show.bind="loading" ref="loader" class="data-grid-loader">
                 <div class="spinner" style="margin: 0 auto;">
                     <div style="background-color: #222" class="bounce1"></div>
                     <div style="background-color: #222" class="bounce2"></div>
@@ -113,7 +113,7 @@
                 </div>
             </div>
 
-            <div ref="tableHeaderScroll" style="overflow: hidden; margin-right: 18px;">
+            <div ref="tableHeaderScroll" class="data-grid-header">
                 <table ref="tableHeader" class="table table-striped">
                 <thead>
                     <tr>
@@ -138,11 +138,11 @@
                             </div>
                         </th>
                     </tr>
-                    <tr if.bind="options.filtering === true && filterVisible === true">
-                        <th if.bind="options.editing === true"></th>
+                    <tr if.bind="options.filtering === true && filterVisible === true" class="filter-row">
+                        <th if.bind="options.editing === true" style="border-right: none;"></th>
                         <th show.bind="column.hide !== true" repeat.for="column of options.columns">
-                            <div css="width: ${column.width ? (column.width-8)+'px' : 143+'px'}">
-                                <div if.bind="column.filter !== false" class="form-material">
+                            <div css="width: ${column.width ? (column.width)+'px' : 150+'px'}">
+                                <div if.bind="column.filter !== false">
                                     <input class="form-control filter-input" value.bind="columnFilters[column.name]" keyup.delegate="setFilter(column.name) & debounce:300" placeholder="${'Filter...' | t}" />
                                     <!-- button class="btn btn-sm btn-default">
                                         <i class="fa fa-bars"></i>
@@ -155,7 +155,11 @@
             </table>
             </div>
 
-            <div ref="tableBodyScroll" style="height: 300px; overflow: auto" scroll.trigger="onScroll($event)">
+            <div ref="tableBodyScroll"
+                 class="data-grid-body"
+                 css="height: ${options.height ? options.height+'px' : '400px'}"
+                 scroll.trigger="onScroll($event)">
+
                 <table ref="tableBody" class="table table-striped">
                     <tbody>
                     <tr class.bind="item === recordManager.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" repeat.for="item of recordManager.records" click.delegate="select(item)">
@@ -191,13 +195,19 @@
                     </tr>
                 </tbody>
                 </table>
+
             </div>
         </div>
         <!-- /Data area -->
 
         <!-- Footer, pager -->
         <div class="table-footer" show.bind="!formMode">
-            <pager class="pull-left" if.bind="options.paging !== false" ref="pager" count.bind="total" size.bind="pageSettings.size"></pager>
+            <pager class="pull-left"
+                   if.bind="options.paging !== false"
+                   ref="pager"
+                   count.bind="total"
+                   size.bind="pageSettings.size">
+            </pager>
 
             <span class="clearfix"></span>
         </div>

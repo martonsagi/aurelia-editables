@@ -8,6 +8,17 @@
 .data-grid .table-toolbar {
   margin: 0 0 15px;
 }
+.data-grid .data-grid-loader {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.3);
+}
+.data-grid .data-grid-header {
+  overflow: hidden;
+  margin-right: 18px;
+}
+.data-grid .data-grid-body {
+  overflow: auto;
+}
 .data-grid table {
   width: auto;
   margin-bottom: 0px;
@@ -58,6 +69,9 @@
 .data-grid tbody tr.active > td {
   background-color: #edf6fd;
 }
+.data-grid tr.filter-row th {
+  border: none;
+}
 .data-grid-sorter {
   margin-right: 5px;
 }
@@ -75,7 +89,7 @@
   padding: 5px 0 15px;
 }
 .form-control.filter-input {
-  width: 80%;
+  width: 100%;
   display: inline;
 }
 .field-error {
