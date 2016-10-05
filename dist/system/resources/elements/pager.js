@@ -3,7 +3,7 @@
 System.register(["aurelia-framework"], function (_export, _context) {
     "use strict";
 
-    var bindable, _typeof, __decorate, __metadata, Pager;
+    var bindable, _createClass, _typeof, __decorate, __metadata, Pager;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -16,6 +16,24 @@ System.register(["aurelia-framework"], function (_export, _context) {
             bindable = _aureliaFramework.bindable;
         }],
         execute: function () {
+            _createClass = function () {
+                function defineProperties(target, props) {
+                    for (var i = 0; i < props.length; i++) {
+                        var descriptor = props[i];
+                        descriptor.enumerable = descriptor.enumerable || false;
+                        descriptor.configurable = true;
+                        if ("value" in descriptor) descriptor.writable = true;
+                        Object.defineProperty(target, descriptor.key, descriptor);
+                    }
+                }
+
+                return function (Constructor, protoProps, staticProps) {
+                    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+                    if (staticProps) defineProperties(Constructor, staticProps);
+                    return Constructor;
+                };
+            }();
+
             _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
                 return typeof obj;
             } : function (obj) {
@@ -86,6 +104,16 @@ System.register(["aurelia-framework"], function (_export, _context) {
                 Pager.prototype.currentChanged = function currentChanged() {
                     this.update();
                 };
+
+                _createClass(Pager, [{
+                    key: "currentPageInfo",
+                    get: function get() {
+                        var curr = this.current * this.size,
+                            start = curr - this.size + 1,
+                            end = curr > this.count ? this.count : curr;
+                        return start + " - " + end;
+                    }
+                }]);
 
                 return Pager;
             }());

@@ -215,10 +215,10 @@ System.register(["aurelia-framework", "aurelia-validation", "../../record", "../
 
             _export("Field", Field);
 
-            __decorate([bindable, __metadata('design:type', Object)], Field.prototype, "options", void 0);
             __decorate([bindable({ defaultBindingMode: bindingMode.twoWay }), __metadata('design:type', Object)], Field.prototype, "fieldValue", void 0);
             __decorate([bindable({ defaultBindingMode: bindingMode.twoWay }), __metadata('design:type', Field)], Field.prototype, "fieldModel", void 0);
             __decorate([bindable({ defaultBindingMode: bindingMode.twoWay }), __metadata('design:type', Record)], Field.prototype, "record", void 0);
+            __decorate([bindable, __metadata('design:type', Object)], Field.prototype, "options", void 0);
             __decorate([bindable, __metadata('design:type', Object)], Field.prototype, "dataObject", void 0);
             __decorate([bindable, __metadata('design:type', String)], Field.prototype, "editableClass", void 0);
             __decorate([bindable, __metadata('design:type', Boolean)], Field.prototype, "editMode", void 0);

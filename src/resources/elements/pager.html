@@ -18,7 +18,7 @@
         </li>
         <li>
             <a>
-                <span if.bind="count > 0">${(current * size) - size + 1} - ${(current * size) > count ? count : (current * size)} of</span>
+                <span if.bind="count > 0">${currentPageInfo} of</span>
                 ${count} records
             </a>
         </li>

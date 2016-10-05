@@ -22,8 +22,9 @@ var __decorate = undefined && undefined.__decorate || function (decorators, targ
 var __metadata = undefined && undefined.__metadata || function (k, v) {
     if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
+
 var MultiGrid = exports.MultiGrid = function MultiGrid() {
     _classCallCheck(this, MultiGrid);
 };
+
 __decorate([(0, _aureliaFramework.bindable)(), __metadata('design:type', Array)], MultiGrid.prototype, "gridOptions", void 0);
-exports.MultiGrid = MultiGrid = __decorate([(0, _aureliaFramework.transient)(), __metadata('design:paramtypes', [])], MultiGrid);

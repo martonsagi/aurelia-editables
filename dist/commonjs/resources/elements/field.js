@@ -191,10 +191,10 @@ var Field = exports.Field = function () {
 
     return Field;
 }();
-__decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], Field.prototype, "options", void 0);
 __decorate([(0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), __metadata('design:type', Object)], Field.prototype, "fieldValue", void 0);
 __decorate([(0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), __metadata('design:type', Field)], Field.prototype, "fieldModel", void 0);
 __decorate([(0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), __metadata('design:type', _record.Record)], Field.prototype, "record", void 0);
+__decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], Field.prototype, "options", void 0);
 __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], Field.prototype, "dataObject", void 0);
 __decorate([_aureliaFramework.bindable, __metadata('design:type', String)], Field.prototype, "editableClass", void 0);
 __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], Field.prototype, "editMode", void 0);

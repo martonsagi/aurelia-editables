@@ -54,6 +54,7 @@
         filtering?: boolean | null;
         paging?: DataObjectPagingViewModel;
         toolbar?: DataObjectToolbarViewModel;
+        toolbarTemplate?: string;
         form?: DataObjectFormViewModel;
         columns?: Array<DataObjectFieldViewModel>;
         children?: Array<DataObjectViewModel>;

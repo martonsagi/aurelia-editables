@@ -4,6 +4,7 @@ export * from './api';
 export * from './resources/attributes/resizable-field';
 export * from './resources/elements/pager';
 export * from './resources/elements/field';
+export * from './resources/elements/data-grid-toolbar';
 export * from './resources/elements/multi-grid';
 export * from './resources/elements/data-grid';
 export * from './resources/elements/data-form';
@@ -37,6 +38,7 @@ export function configure(config, callback = null) {
             './resources/elements/field',
             './resources/elements/pager',
             './resources/elements/data-form',
+            './resources/elements/data-grid-toolbar',
             './resources/elements/data-grid',
             './resources/elements/multi-grid'
         );

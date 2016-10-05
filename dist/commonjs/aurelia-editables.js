@@ -76,6 +76,18 @@ Object.keys(_field).forEach(function (key) {
     });
 });
 
+var _dataGridToolbar = require('./resources/elements/data-grid-toolbar');
+
+Object.keys(_dataGridToolbar).forEach(function (key) {
+    if (key === "default" || key === "__esModule") return;
+    Object.defineProperty(exports, key, {
+        enumerable: true,
+        get: function get() {
+            return _dataGridToolbar[key];
+        }
+    });
+});
+
 var _multiGrid = require('./resources/elements/multi-grid');
 
 Object.keys(_multiGrid).forEach(function (key) {
@@ -164,5 +176,5 @@ function configure(config) {
         dropdown: './editors/dropdown-editor'
     };
     if (callback instanceof Function) callback(pluginConfig);
-    config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid', './resources/elements/multi-grid');
+    config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
 }

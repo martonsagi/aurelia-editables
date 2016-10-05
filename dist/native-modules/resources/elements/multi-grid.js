@@ -13,9 +13,8 @@ var __decorate = this && this.__decorate || function (decorators, target, key, d
 var __metadata = this && this.__metadata || function (k, v) {
     if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { transient, bindable } from 'aurelia-framework';
+import { bindable } from 'aurelia-framework';
 export var MultiGrid = function MultiGrid() {
     _classCallCheck(this, MultiGrid);
 };
 __decorate([bindable(), __metadata('design:type', Array)], MultiGrid.prototype, "gridOptions", void 0);
-MultiGrid = __decorate([transient(), __metadata('design:paramtypes', [])], MultiGrid);

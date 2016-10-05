@@ -18,6 +18,12 @@ export let Pager = class Pager {
         this.parent = bindingContext;
     }
     attached() {}
+    get currentPageInfo() {
+        let curr = this.current * this.size,
+            start = curr - this.size + 1,
+            end = curr > this.count ? this.count : curr;
+        return `${ start } - ${ end }`;
+    }
     setPage(num) {
         if (num === this.current) return false;
         if (this.parent.changePage(num, this.size) === true) this.current = num;

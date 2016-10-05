@@ -13,8 +13,6 @@ export class Field {
 
     //#region Bindables
 
-    @bindable options: DataObjectFieldViewModel;
-
     @bindable({ defaultBindingMode: bindingMode.twoWay })
     fieldValue;
 
@@ -24,53 +22,29 @@ export class Field {
     @bindable({ defaultBindingMode: bindingMode.twoWay })
     record: Record;
 
+    @bindable options: DataObjectFieldViewModel;
     @bindable dataObject;
-
     @bindable editableClass: string = '';
-
     @bindable editMode: boolean = false;
-
     @bindable withLabel: boolean = true;
-
     @bindable integratedMode: boolean = false;
-
-    //#endregion
-
-    //#region Bindable events
-
-    /*private _events: any = {
-        'on-created': null,
-        'on-bind': null,
-        'on-value-changed': null,
-        'on-before-validate': null,
-        'on-after-validate': null
-    };*/
 
     //#endregion
 
     //#region Properties
 
+    element: Element;
+    viewStrategy: InlineViewStrategy;
     displayValue: any;
-
+    inputType: string;
     editorType: string;
     editorViewModel: string;
-
-    errors: Array<any>;
-
     validationMode = validateTrigger.change;
-    isValid = true;
-
-    init: number = 0;
-
     controller: ValidationController;
-
-    viewStrategy: InlineViewStrategy;
-
-    inputType: string;
-
+    errors: Array<any>;
+    isValid = true;
     pluginConfig: Config;
-
-    element: Element;
+    init: number = 0;
 
     //#endregion
 

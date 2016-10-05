@@ -77,8 +77,8 @@ export let DataForm = class DataForm {
         }));
     }
 };
-__decorate([bindable, __metadata('design:type', Object)], DataForm.prototype, "options", void 0);
 __decorate([bindable({ defaultBindingMode: bindingMode.twoWay }), __metadata('design:type', Record)], DataForm.prototype, "record", void 0);
+__decorate([bindable, __metadata('design:type', Object)], DataForm.prototype, "options", void 0);
 __decorate([bindable, __metadata('design:type', Function)], DataForm.prototype, "onSave", void 0);
 __decorate([bindable, __metadata('design:type', Function)], DataForm.prototype, "onCancel", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataForm.prototype, "integratedMode", void 0);

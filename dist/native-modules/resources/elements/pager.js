@@ -1,3 +1,5 @@
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -65,6 +67,16 @@ export var Pager = function () {
     Pager.prototype.currentChanged = function currentChanged() {
         this.update();
     };
+
+    _createClass(Pager, [{
+        key: "currentPageInfo",
+        get: function get() {
+            var curr = this.current * this.size,
+                start = curr - this.size + 1,
+                end = curr > this.count ? this.count : curr;
+            return start + " - " + end;
+        }
+    }]);
 
     return Pager;
 }();

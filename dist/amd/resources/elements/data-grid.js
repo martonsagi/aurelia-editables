@@ -1,4 +1,4 @@
-define(["exports", "aurelia-framework", "../../config", "../../api", "../../record", "../../record-manager"], function (exports, _aureliaFramework, _config, _api, _record, _recordManager) {
+define(["exports", "aurelia-framework", "../../config", "../../api", "../../record", "../../record-manager", "../../deep-observer"], function (exports, _aureliaFramework, _config, _api, _record, _recordManager, _deepObserver) {
     "use strict";
 
     Object.defineProperty(exports, "__esModule", {
@@ -11,6 +11,24 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             throw new TypeError("Cannot call a class as a function");
         }
     }
+
+    var _createClass = function () {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || false;
+                descriptor.configurable = true;
+                if ("value" in descriptor) descriptor.writable = true;
+                Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
+
+        return function (Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+        };
+    }();
 
     var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
         return typeof obj;
@@ -30,7 +48,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
         if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
     };
     var DataGrid = exports.DataGrid = function () {
-        function DataGrid(element, viewCompiler) {
+        function DataGrid(element, deepObserver) {
             _classCallCheck(this, DataGrid);
 
             this.currentRecord = null;
@@ -47,12 +65,13 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.columnFilters = null;
             this.sortSettings = null;
             this.pageSettings = { current: 1, size: 10 };
-            this.validationStatus = {};
             this.isValid = true;
             this.element = element;
-            this.viewCompiler = viewCompiler;
+            this.deepObserver = deepObserver;
+            this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
             this.pluginConfig = _aureliaFramework.Container.instance.get(_config.Config);
             this.apiClass = this.pluginConfig.api;
+            this.gridModel = this;
             this.dispatch('on-created', { viewModel: this });
         }
 
@@ -72,6 +91,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
 
         DataGrid.prototype.unbind = function unbind() {
             this.editMode = false;
+            this.deepObserverDisposer();
         };
 
         DataGrid.prototype.init = function init(canLoad) {
@@ -460,6 +480,15 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             target.setAttribute('data-y', y);
         };
 
+        DataGrid.prototype.optionsChanged = function optionsChanged(newValue, oldValue, property) {
+            this.dispatch('on-options-changed', {
+                viewModel: this,
+                newValue: newValue,
+                oldValue: oldValue,
+                propery: property
+            });
+        };
+
         DataGrid.prototype.onScroll = function onScroll(event) {
             this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;
         };
@@ -470,6 +499,13 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                 detail: data
             }));
         };
+
+        _createClass(DataGrid, [{
+            key: "toolbarTemplateOption",
+            get: function get() {
+                return this.options.toolbarTemplate || this.toolbarTemplate || './data-grid-toolbar';
+            }
+        }]);
 
         return DataGrid;
     }();
@@ -484,5 +520,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
-    exports.DataGrid = DataGrid = __decorate([_aureliaFramework.autoinject, __metadata('design:paramtypes', [Element, _aureliaFramework.ViewCompiler])], DataGrid);
+    __decorate([_aureliaFramework.bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
+    __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);
+    exports.DataGrid = DataGrid = __decorate([_aureliaFramework.autoinject, __metadata('design:paramtypes', [Element, _deepObserver.DeepObserver])], DataGrid);
 });

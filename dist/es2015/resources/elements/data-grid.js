@@ -8,13 +8,14 @@ var __decorate = this && this.__decorate || function (decorators, target, key, d
 var __metadata = this && this.__metadata || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { bindable, autoinject, ViewCompiler, Container } from 'aurelia-framework';
+import { bindable, autoinject, Container } from 'aurelia-framework';
 import { Config } from '../../config';
 import { Api } from '../../api';
 import { RecordState } from '../../record';
 import { RecordManager } from '../../record-manager';
+import { DeepObserver } from '../../deep-observer';
 export let DataGrid = class DataGrid {
-    constructor(element, viewCompiler) {
+    constructor(element, deepObserver) {
         this.currentRecord = null;
         this.parentRecord = null;
         this.editMode = false;
@@ -29,13 +30,17 @@ export let DataGrid = class DataGrid {
         this.columnFilters = null;
         this.sortSettings = null;
         this.pageSettings = { current: 1, size: 10 };
-        this.validationStatus = {};
         this.isValid = true;
         this.element = element;
-        this.viewCompiler = viewCompiler;
+        this.deepObserver = deepObserver;
+        this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
         this.pluginConfig = Container.instance.get(Config);
         this.apiClass = this.pluginConfig.api;
+        this.gridModel = this;
         this.dispatch('on-created', { viewModel: this });
+    }
+    get toolbarTemplateOption() {
+        return this.options.toolbarTemplate || this.toolbarTemplate || './data-grid-toolbar';
     }
     created() {}
     bind(bindingContext) {
@@ -49,6 +54,7 @@ export let DataGrid = class DataGrid {
     detached() {}
     unbind() {
         this.editMode = false;
+        this.deepObserverDisposer();
     }
     init(canLoad) {
         this.dispatch('on-init', { viewModel: this });
@@ -361,6 +367,14 @@ export let DataGrid = class DataGrid {
         target.setAttribute('data-x', x);
         target.setAttribute('data-y', y);
     }
+    optionsChanged(newValue, oldValue, property) {
+        this.dispatch('on-options-changed', {
+            viewModel: this,
+            newValue: newValue,
+            oldValue: oldValue,
+            propery: property
+        });
+    }
     onScroll(event) {
         this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;
     }
@@ -382,4 +396,6 @@ __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
-DataGrid = __decorate([autoinject, __metadata('design:paramtypes', [Element, ViewCompiler])], DataGrid);
+__decorate([bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
+__decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);
+DataGrid = __decorate([autoinject, __metadata('design:paramtypes', [Element, DeepObserver])], DataGrid);

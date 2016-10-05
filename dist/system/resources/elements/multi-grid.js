@@ -3,7 +3,7 @@
 System.register(["aurelia-framework"], function (_export, _context) {
     "use strict";
 
-    var transient, bindable, _typeof, __decorate, __metadata, MultiGrid;
+    var bindable, _typeof, __decorate, __metadata, MultiGrid;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -13,7 +13,6 @@ System.register(["aurelia-framework"], function (_export, _context) {
 
     return {
         setters: [function (_aureliaFramework) {
-            transient = _aureliaFramework.transient;
             bindable = _aureliaFramework.bindable;
         }],
         execute: function () {
@@ -43,7 +42,6 @@ System.register(["aurelia-framework"], function (_export, _context) {
             _export("MultiGrid", MultiGrid);
 
             __decorate([bindable(), __metadata('design:type', Array)], MultiGrid.prototype, "gridOptions", void 0);
-            _export("MultiGrid", MultiGrid = __decorate([transient(), __metadata('design:paramtypes', [])], MultiGrid));
         }
     };
 });

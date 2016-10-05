@@ -1,12 +1,13 @@
 ﻿//#region import
 
-import { bindable, autoinject, ViewCompiler, Container, BindingEngine } from 'aurelia-framework';
+import { bindable, autoinject, Container } from 'aurelia-framework';
 import { DataObjectViewModel, DataObjectPagingViewModel, QueryModel, DataObjectFieldViewModel } from 'aurelia-editables';
 import { Config } from '../../config';
 import { Api } from '../../api';
 import { Pager } from './pager';
 import { Record, RecordState } from '../../record';
 import { RecordManager } from '../../record-manager';
+import { DeepObserver } from '../../deep-observer';
 
 //#endregion
 
@@ -16,58 +17,20 @@ export class DataGrid {
     //#region Bindables
 
     @bindable options: DataObjectViewModel;
-
     @bindable currentRecord: Record | null = null;
-
     @bindable parentRecord: Record | null = null;
-
     @bindable entity;
-
     @bindable editMode: boolean = false;
-
     @bindable formMode: boolean = false;
-
     @bindable showFormOnCreate: boolean = false;
-
     @bindable childMode: boolean = false;
-
     @bindable canLoad: boolean = false;
-
     @bindable showToolbar: boolean = true;
-
     @bindable filterVisible: boolean = false;
+    @bindable toolbarTemplate: string;
 
-    //#endregion
-
-    //#region Bindable events
-
-    /*private _events: any = {
-        'on-created': null,
-        'on-bind': null,
-        'on-attached': null,
-        'on-init': null,
-        'on-before-load': null,
-        'on-after-load': null,
-        'on-record-add': null,
-        'on-record-edit': null,
-        'on-record-remove': null,
-        'on-record-changed': null,
-        'on-record-validated': null,
-        'on-recordManager-changed': null,
-        'on-before-validate': null,
-        'on-after-validate': null,
-        'on-before-save-': null,
-        'on-after-save': null,
-        'on-before-cancel': null,
-        'on-after-cancel': null,
-        'on-refresh': null,
-        'on-filter': null,
-        'on-sort': null,
-        'on-select': null,
-        'on-form-show': null,
-        'on-form-hide': null,
-        'on-page-changed': null
-    };*/
+    @bindable
+    gridModel: any;
 
     //#endregion
 
@@ -75,14 +38,14 @@ export class DataGrid {
 
     recordManager: RecordManager | null = new RecordManager();
     element: Element;
-    loader: any;
-    tableBody: any;
-    tableContainer: any;
+    loader: HTMLElement;
+    tableBody: HTMLElement;
+    tableContainer: HTMLElement;
+    tableHeaderScroll: HTMLElement;
 
     api: Api;
     apiClass: any;
     loading: boolean;
-    viewCompiler: ViewCompiler;
 
     queryModel: QueryModel = { filters: []  };
     columnFilters: Array<any> = null;
@@ -91,26 +54,28 @@ export class DataGrid {
     pageSettings: DataObjectPagingViewModel = { current: 1, size: 10 };
     pager: any;
     total: number;
-    tableHeaderScroll: HTMLElement;
 
-    validationStatus = {};
     isValid = true;
 
     pluginConfig: Config;
+    deepObserver: DeepObserver;
+    deepObserverDisposer: any;
+
+    get toolbarTemplateOption() {
+        return this.options.toolbarTemplate || this.toolbarTemplate || './data-grid-toolbar';
+    }
 
     //#endregion
 
-    constructor(element: Element, viewCompiler: ViewCompiler) {
+    constructor(element: Element, deepObserver: DeepObserver) {
         this.element = element;
-        this.viewCompiler = viewCompiler;
+        this.deepObserver = deepObserver;
+        this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
 
         this.pluginConfig = Container.instance.get(Config);
         this.apiClass = this.pluginConfig.api;
 
-        //let locator = <BindingEngine>Container.instance.get(BindingEngine);
-        //locator
-        //    .collectionObserver(this.recordManager.records)
-        //    .subscribe(this.onRecordsChange.bind(this));
+        this.gridModel = this;
 
         this.dispatch('on-created', { viewModel: this });
     }
@@ -126,6 +91,7 @@ export class DataGrid {
 
     attached() {
         this.dispatch('on-attached', { viewModel: this });
+
         let canLoad = this.parentRecord === null || this.canLoad === true;
         this.init(canLoad);
     }
@@ -136,6 +102,7 @@ export class DataGrid {
 
     unbind() {
         this.editMode = false;
+        this.deepObserverDisposer();
     }
 
     //#endregion
@@ -224,7 +191,7 @@ export class DataGrid {
         loader.style.width = width + 'px';
         loader.style.height = height + 'px';
 
-        loader.querySelector('.spinner').style.marginTop = (tableContainer.offsetHeight / 2) + 'px';
+        (<HTMLElement>loader.querySelector('.spinner')).style.marginTop = (tableContainer.offsetHeight / 2) + 'px';
     }
 
     loadColumns() {
@@ -614,6 +581,15 @@ export class DataGrid {
     //#endregion
 
     //#region Events
+
+    optionsChanged(newValue, oldValue, property) {
+        this.dispatch('on-options-changed', {
+            viewModel: this,
+            newValue: newValue,
+            oldValue: oldValue,
+            propery: property
+        });
+    }
 
     onScroll(event) {
         this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;

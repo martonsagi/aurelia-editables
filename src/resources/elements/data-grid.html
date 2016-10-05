@@ -38,58 +38,9 @@
     <!-- /Child Grids -->
 
     <!-- Current Grid -->
-    <div show.bind=" !childMode" class="data-grid animated fadeIn">
+    <div show.bind="!childMode" class="data-grid animated fadeIn">
         <!-- Toolbar -->
-        <div class="table-toolbar" if.bind="showToolbar">
-            <div class="pull-left">
-                <button if.bind="options.editing === true && formMode === true" class="btn btn-primary" click.delegate="endEditForm($event)" title="${'Back' | t}">
-                    <i class="fa fa-caret-left"></i> <span class="hidden-xs"> ${'Back' | t}</span>
-                </button>
-
-                <button if.bind="options.filtering === true && formMode !== true" class="btn btn-default" click.delegate="toggleFilter($event)">
-                    <i class="fa fa-filter"></i>
-                </button>
-
-                <button if.bind="options.editing === true" class="btn btn-default" click.delegate="add($event)" title="${'Add' | t}">
-                    <i class="fa fa-plus"></i> <span class="hidden-xs"> ${'Add' | t}</span>
-                </button>
-
-                <button if.bind="options.editing === true" class="btn btn-default" click.delegate="edit($event)" title="${'Edit' | t}">
-                    <i class="fa fa-pencil"></i> <span class="hidden-xs"> ${'Edit' | t}</span>
-                </button>
-
-                <button if.bind="options.editing === true" disabled.bind="editMode === true && isValid !== true" class="btn btn-success" click.delegate="save($event)" title="${'Save' | t}">
-                    <i class="fa fa-floppy-o"></i> <span class="hidden-xs"> ${'Save' | t}</span>
-                </button>
-
-                <button if.bind="options.editing === true" class="btn btn-warning" click.delegate="cancel($event)" title="${'Cancel' | t}">
-                    <i class="fa fa-ban"></i> <span class="hidden-xs"> ${'Cancel' | t}</span>
-                </button>
-
-                <div if.bind="options.toolbar.download" class="btn-group" title="${'Download' | t}">
-                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                        <i class="fa fa-download"></i> <span class="caret"></span>
-                    </button>
-                    <ul class="dropdown-menu">
-                        <li if.bind="options.toolbar.download.excel">
-                            <a href="#"><i style="margin-right: 5px" class="fa fa-file-excel-o"></i> ${'Excel' | t}</a>
-                        </li>
-                        <li if.bind="options.toolbar.download.word">
-                            <a href="#"><i class="fa fa-file-word-o"></i> ${'Word' | t}</a>
-                        </li>
-                        <li if.bind="options.toolbar.download.pdf">
-                            <a href="#"><i class="fa fa-file-pdf-o"></i> ${'PDF' | t}</a>
-                        </li>
-                    </ul>
-                </div>
-                &nbsp;
-                <button class="btn btn-default" click.delegate="refresh($event)" title="${'Refresh' | t}">
-                    <i class="fa fa-refresh"></i>
-                </button>
-            </div>
-
-            <span class="clearfix"></span>
-        </div>
+        <compose view-model="${toolbarTemplateOption}" model.bind="gridModel"></compose>
         <!-- /Toolbar -->
 
         <!-- Edit Form -->
@@ -143,10 +94,10 @@
                         <th show.bind="column.hide !== true" repeat.for="column of options.columns">
                             <div css="width: ${column.width ? (column.width)+'px' : 150+'px'}">
                                 <div if.bind="column.filter !== false">
-                                    <input class="form-control filter-input" value.bind="columnFilters[column.name]" keyup.delegate="setFilter(column.name) & debounce:300" placeholder="${'Filter...' | t}" />
-                                    <!-- button class="btn btn-sm btn-default">
-                                        <i class="fa fa-bars"></i>
-                                    </button -->
+                                    <input class="form-control filter-input"
+                                           value.bind="columnFilters[column.name]"
+                                           keyup.delegate="setFilter(column.name) & debounce:300"
+                                           placeholder="${'Filter...' | t}" />
                                 </div>
                             </div>
                         </th>
@@ -162,18 +113,25 @@
 
                 <table ref="tableBody" class="table table-striped">
                     <tbody>
-                    <tr class.bind="item === recordManager.currentRecord ? 'active' : ''" show.bind="item.state != 'deleted'" repeat.for="item of recordManager.records" click.delegate="select(item)">
+                    <tr class.bind="item === recordManager.currentRecord ? 'active' : ''"
+                        show.bind="item.state != 'deleted'"
+                        repeat.for="item of recordManager.records"
+                        click.delegate="select(item)">
+
                         <td if.bind="options.editing === true || options.children.length > 0">
                             <div style="min-width: 100px;">
-                                <button if.bind="options.children.length > 0" class="btn btn-sm btn-default" click.delegate="showChildren(item, $event)">
+                                <button if.bind="options.children.length > 0" class="btn btn-sm btn-default"
+                                        click.delegate="showChildren(item, $event)">
                                     <i class="fa fa-table"></i>
                                 </button>
 
-                                <button if.bind="options.editing === true" class="btn btn-sm btn-default" click.delegate="editForm(item, $event)">
+                                <button if.bind="options.editing === true" class="btn btn-sm btn-default"
+                                        click.delegate="editForm(item, $event)">
                                     <i class="fa fa-pencil"></i>
                                 </button>
 
-                                <button if.bind="options.editing === true" class="btn btn-sm btn-danger" click.delegate="remove(item, $event)">
+                                <button if.bind="options.editing === true" class="btn btn-sm btn-danger"
+                                        click.delegate="remove(item, $event)">
                                     <i class="fa fa-remove"></i>
                                 </button>
                             </div>

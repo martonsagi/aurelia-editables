@@ -1,6 +1,6 @@
 'use strict';
 
-System.register(['./record', './record-manager', './api', './resources/attributes/resizable-field', './resources/elements/pager', './resources/elements/field', './resources/elements/multi-grid', './resources/elements/data-grid', './resources/elements/data-form', './resources/elements/editors/text-editor', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './config', 'aurelia-framework'], function (_export, _context) {
+System.register(['./record', './record-manager', './api', './resources/attributes/resizable-field', './resources/elements/pager', './resources/elements/field', './resources/elements/data-grid-toolbar', './resources/elements/multi-grid', './resources/elements/data-grid', './resources/elements/data-form', './resources/elements/editors/text-editor', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './config', 'aurelia-framework'], function (_export, _context) {
     "use strict";
 
     var Api, Config, Container;
@@ -15,7 +15,7 @@ System.register(['./record', './record-manager', './api', './resources/attribute
             dropdown: './editors/dropdown-editor'
         };
         if (callback instanceof Function) callback(pluginConfig);
-        config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid', './resources/elements/multi-grid');
+        config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
     }
 
     _export('configure', configure);
@@ -70,54 +70,62 @@ System.register(['./record', './record-manager', './api', './resources/attribute
             }
 
             _export(_exportObj6);
-        }, function (_resourcesElementsMultiGrid) {
+        }, function (_resourcesElementsDataGridToolbar) {
             var _exportObj7 = {};
 
-            for (var _key7 in _resourcesElementsMultiGrid) {
-                if (_key7 !== "default" && _key7 !== "__esModule") _exportObj7[_key7] = _resourcesElementsMultiGrid[_key7];
+            for (var _key7 in _resourcesElementsDataGridToolbar) {
+                if (_key7 !== "default" && _key7 !== "__esModule") _exportObj7[_key7] = _resourcesElementsDataGridToolbar[_key7];
             }
 
             _export(_exportObj7);
-        }, function (_resourcesElementsDataGrid) {
+        }, function (_resourcesElementsMultiGrid) {
             var _exportObj8 = {};
 
-            for (var _key8 in _resourcesElementsDataGrid) {
-                if (_key8 !== "default" && _key8 !== "__esModule") _exportObj8[_key8] = _resourcesElementsDataGrid[_key8];
+            for (var _key8 in _resourcesElementsMultiGrid) {
+                if (_key8 !== "default" && _key8 !== "__esModule") _exportObj8[_key8] = _resourcesElementsMultiGrid[_key8];
             }
 
             _export(_exportObj8);
-        }, function (_resourcesElementsDataForm) {
+        }, function (_resourcesElementsDataGrid) {
             var _exportObj9 = {};
 
-            for (var _key9 in _resourcesElementsDataForm) {
-                if (_key9 !== "default" && _key9 !== "__esModule") _exportObj9[_key9] = _resourcesElementsDataForm[_key9];
+            for (var _key9 in _resourcesElementsDataGrid) {
+                if (_key9 !== "default" && _key9 !== "__esModule") _exportObj9[_key9] = _resourcesElementsDataGrid[_key9];
             }
 
             _export(_exportObj9);
-        }, function (_resourcesElementsEditorsTextEditor) {
+        }, function (_resourcesElementsDataForm) {
             var _exportObj10 = {};
 
-            for (var _key10 in _resourcesElementsEditorsTextEditor) {
-                if (_key10 !== "default" && _key10 !== "__esModule") _exportObj10[_key10] = _resourcesElementsEditorsTextEditor[_key10];
+            for (var _key10 in _resourcesElementsDataForm) {
+                if (_key10 !== "default" && _key10 !== "__esModule") _exportObj10[_key10] = _resourcesElementsDataForm[_key10];
             }
 
             _export(_exportObj10);
-        }, function (_resourcesElementsEditorsBooleanEditor) {
+        }, function (_resourcesElementsEditorsTextEditor) {
             var _exportObj11 = {};
 
-            for (var _key11 in _resourcesElementsEditorsBooleanEditor) {
-                if (_key11 !== "default" && _key11 !== "__esModule") _exportObj11[_key11] = _resourcesElementsEditorsBooleanEditor[_key11];
+            for (var _key11 in _resourcesElementsEditorsTextEditor) {
+                if (_key11 !== "default" && _key11 !== "__esModule") _exportObj11[_key11] = _resourcesElementsEditorsTextEditor[_key11];
             }
 
             _export(_exportObj11);
-        }, function (_resourcesElementsEditorsDropdownEditor) {
+        }, function (_resourcesElementsEditorsBooleanEditor) {
             var _exportObj12 = {};
 
-            for (var _key12 in _resourcesElementsEditorsDropdownEditor) {
-                if (_key12 !== "default" && _key12 !== "__esModule") _exportObj12[_key12] = _resourcesElementsEditorsDropdownEditor[_key12];
+            for (var _key12 in _resourcesElementsEditorsBooleanEditor) {
+                if (_key12 !== "default" && _key12 !== "__esModule") _exportObj12[_key12] = _resourcesElementsEditorsBooleanEditor[_key12];
             }
 
             _export(_exportObj12);
+        }, function (_resourcesElementsEditorsDropdownEditor) {
+            var _exportObj13 = {};
+
+            for (var _key13 in _resourcesElementsEditorsDropdownEditor) {
+                if (_key13 !== "default" && _key13 !== "__esModule") _exportObj13[_key13] = _resourcesElementsEditorsDropdownEditor[_key13];
+            }
+
+            _export(_exportObj13);
         }, function (_config) {
             Config = _config.Config;
         }, function (_aureliaFramework) {

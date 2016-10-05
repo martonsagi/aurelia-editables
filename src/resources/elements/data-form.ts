@@ -11,35 +11,16 @@ export class DataForm {
 
     //#region Bindables
 
-    @bindable options: DataObjectViewModel;
-
     @bindable({ defaultBindingMode: bindingMode.twoWay })
     record: Record;
 
+    @bindable options: DataObjectViewModel;
     @bindable onSave: Function;
-
     @bindable onCancel: Function;
-
     @bindable integratedMode = false;
-
     @bindable showToolbar = false;
 
     //#endregion
-
-
-    //#region Bindable events
-
-    /*private _events: any = {
-        'on-created': null,
-        'on-bind': null,
-        'on-attached': null,
-        'on-record-changed': null,
-        'on-before-validate': null,
-        'on-after-validate': null
-    };*/
-
-    //#endregion
-
 
     //#region Properties
 
@@ -50,9 +31,7 @@ export class DataForm {
     //fields;
 
     parent: any;
-
     element: Element;
-
     groups: Array<any> | null;
 
     //#endregion

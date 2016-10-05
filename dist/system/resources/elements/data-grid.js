@@ -1,9 +1,9 @@
 "use strict";
 
-System.register(["aurelia-framework", "../../config", "../../api", "../../record", "../../record-manager"], function (_export, _context) {
+System.register(["aurelia-framework", "../../config", "../../api", "../../record", "../../record-manager", "../../deep-observer"], function (_export, _context) {
     "use strict";
 
-    var bindable, autoinject, ViewCompiler, Container, Config, Api, RecordState, RecordManager, _typeof, __decorate, __metadata, DataGrid;
+    var bindable, autoinject, Container, Config, Api, RecordState, RecordManager, DeepObserver, _createClass, _typeof, __decorate, __metadata, DataGrid;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -15,7 +15,6 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
         setters: [function (_aureliaFramework) {
             bindable = _aureliaFramework.bindable;
             autoinject = _aureliaFramework.autoinject;
-            ViewCompiler = _aureliaFramework.ViewCompiler;
             Container = _aureliaFramework.Container;
         }, function (_config) {
             Config = _config.Config;
@@ -25,8 +24,28 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
             RecordState = _record.RecordState;
         }, function (_recordManager) {
             RecordManager = _recordManager.RecordManager;
+        }, function (_deepObserver) {
+            DeepObserver = _deepObserver.DeepObserver;
         }],
         execute: function () {
+            _createClass = function () {
+                function defineProperties(target, props) {
+                    for (var i = 0; i < props.length; i++) {
+                        var descriptor = props[i];
+                        descriptor.enumerable = descriptor.enumerable || false;
+                        descriptor.configurable = true;
+                        if ("value" in descriptor) descriptor.writable = true;
+                        Object.defineProperty(target, descriptor.key, descriptor);
+                    }
+                }
+
+                return function (Constructor, protoProps, staticProps) {
+                    if (protoProps) defineProperties(Constructor.prototype, protoProps);
+                    if (staticProps) defineProperties(Constructor, staticProps);
+                    return Constructor;
+                };
+            }();
+
             _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
                 return typeof obj;
             } : function (obj) {
@@ -47,7 +66,7 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
             };
 
             _export("DataGrid", DataGrid = function () {
-                function DataGrid(element, viewCompiler) {
+                function DataGrid(element, deepObserver) {
                     _classCallCheck(this, DataGrid);
 
                     this.currentRecord = null;
@@ -64,12 +83,13 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                     this.columnFilters = null;
                     this.sortSettings = null;
                     this.pageSettings = { current: 1, size: 10 };
-                    this.validationStatus = {};
                     this.isValid = true;
                     this.element = element;
-                    this.viewCompiler = viewCompiler;
+                    this.deepObserver = deepObserver;
+                    this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
                     this.pluginConfig = Container.instance.get(Config);
                     this.apiClass = this.pluginConfig.api;
+                    this.gridModel = this;
                     this.dispatch('on-created', { viewModel: this });
                 }
 
@@ -89,6 +109,7 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
 
                 DataGrid.prototype.unbind = function unbind() {
                     this.editMode = false;
+                    this.deepObserverDisposer();
                 };
 
                 DataGrid.prototype.init = function init(canLoad) {
@@ -477,6 +498,15 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                     target.setAttribute('data-y', y);
                 };
 
+                DataGrid.prototype.optionsChanged = function optionsChanged(newValue, oldValue, property) {
+                    this.dispatch('on-options-changed', {
+                        viewModel: this,
+                        newValue: newValue,
+                        oldValue: oldValue,
+                        propery: property
+                    });
+                };
+
                 DataGrid.prototype.onScroll = function onScroll(event) {
                     this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;
                 };
@@ -487,6 +517,13 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                         detail: data
                     }));
                 };
+
+                _createClass(DataGrid, [{
+                    key: "toolbarTemplateOption",
+                    get: function get() {
+                        return this.options.toolbarTemplate || this.toolbarTemplate || './data-grid-toolbar';
+                    }
+                }]);
 
                 return DataGrid;
             }());
@@ -504,7 +541,9 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
             __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
             __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
             __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
-            _export("DataGrid", DataGrid = __decorate([autoinject, __metadata('design:paramtypes', [Element, ViewCompiler])], DataGrid));
+            __decorate([bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
+            __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);
+            _export("DataGrid", DataGrid = __decorate([autoinject, __metadata('design:paramtypes', [Element, DeepObserver])], DataGrid));
         }
     };
 });

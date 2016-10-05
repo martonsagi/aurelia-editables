@@ -4,6 +4,7 @@ export * from './api';
 export * from './resources/attributes/resizable-field';
 export * from './resources/elements/pager';
 export * from './resources/elements/field';
+export * from './resources/elements/data-grid-toolbar';
 export * from './resources/elements/multi-grid';
 export * from './resources/elements/data-grid';
 export * from './resources/elements/data-form';
@@ -24,5 +25,5 @@ export function configure(config) {
         dropdown: './editors/dropdown-editor'
     };
     if (callback instanceof Function) callback(pluginConfig);
-    config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid', './resources/elements/multi-grid');
+    config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
 }
