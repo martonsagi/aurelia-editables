@@ -587,7 +587,7 @@ export class DataGrid {
             viewModel: this,
             newValue: newValue,
             oldValue: oldValue,
-            propery: property
+            property: property
         });
     }
 

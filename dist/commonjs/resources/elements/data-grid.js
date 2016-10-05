@@ -472,7 +472,7 @@ var DataGrid = exports.DataGrid = function () {
             viewModel: this,
             newValue: newValue,
             oldValue: oldValue,
-            propery: property
+            property: property
         });
     };
 

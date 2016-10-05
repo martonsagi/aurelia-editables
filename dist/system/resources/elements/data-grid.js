@@ -503,7 +503,7 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                         viewModel: this,
                         newValue: newValue,
                         oldValue: oldValue,
-                        propery: property
+                        property: property
                     });
                 };
 

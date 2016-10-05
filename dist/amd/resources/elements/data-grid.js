@@ -485,7 +485,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                 viewModel: this,
                 newValue: newValue,
                 oldValue: oldValue,
-                propery: property
+                property: property
             });
         };
 
