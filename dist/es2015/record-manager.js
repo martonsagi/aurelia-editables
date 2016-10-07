@@ -12,27 +12,34 @@ import { Record, RecordState } from './record';
 import { observable } from 'aurelia-framework';
 export let RecordManager = class RecordManager {
     constructor(template) {
+        this.isValid = false;
         this.queryModel = { filters: [] };
-        this.validationStatus = {};
-        this.isValid = true;
+        this.validationFields = [];
         this._template = template;
         this.records = new Array();
         this.currentRecord = {};
     }
     current(item) {
         this.currentRecord = item;
+        if (this.currentRecord.editMode === true) {
+            this.currentRecord.setValidationFields(this.validationFields);
+        }
     }
     load(data) {
         this.setOriginal(data);
         for (let row of data) {
             let record = new Record(row);
+            record.setRecordManager(this);
             this.records.push(record);
         }
     }
     add() {
         let templateData = JSON.parse(JSON.stringify(this._template));
         let newRow = new Record(templateData, RecordState.added);
-        newRow.isValid = false;
+        newRow.setRecordManager(this);
+        if (this.validationFields && this.validationFields.length > 0) {
+            newRow.setValidationFields(this.validationFields);
+        }
         this.isValid = false;
         this.records.unshift(newRow);
         this.current(this.records[0]);
@@ -40,6 +47,19 @@ export let RecordManager = class RecordManager {
             this.currentRecord[filter.field] = filter.value;
         }
         this.validate();
+    }
+    edit(toggle) {
+        if (toggle === true) {
+            if (this.currentRecord) {
+                this.currentRecord.setValidationFields(this.validationFields);
+                this.currentRecord.editMode = true;
+                this.currentRecord.validate();
+            }
+        } else {
+            if (this.currentRecord) {
+                this.currentRecord.editMode = false;
+            }
+        }
     }
     remove(item) {
         let i = this.records.indexOf(item);
@@ -127,28 +147,17 @@ export let RecordManager = class RecordManager {
             dirty: added.length > 0 || modified.length > 0 || deleted.length > 0
         };
     }
+    setValidationFields(fieldNames) {
+        this.validationFields = fieldNames;
+    }
     validate() {
-        this.isValid = true;
-        let rows = this.records.filter(item => item.state !== RecordState.deleted);
-        for (let row of rows) {
-            if (row.isValid !== true) {
-                this.isValid = false;
-            }
+        this.isValid = false;
+        if (this.dirty() === false) {
+            return;
         }
-    }
-    validateCurrentRecord() {
-        let isValid = true;
-        for (let field in this.validationStatus) {
-            if (this.validationStatus[field] === false) {
-                isValid = false;
-            }
-        }
-        this.currentRecord.isValid = isValid;
-    }
-    setValidationStatus(field, isValid) {
-        this.validationStatus[field] = isValid;
-        this.validateCurrentRecord();
-        this.validate();
+        let rows = this.records.filter(item => (item.state === RecordState.added || item.state === RecordState.modified) && item.isValid === false);
+        this.isValid = rows.length === 0;
     }
 };
-__decorate([observable(), __metadata('design:type', Array)], RecordManager.prototype, "records", void 0);
+__decorate([observable, __metadata('design:type', Object)], RecordManager.prototype, "currentRecord", void 0);
+__decorate([observable(), __metadata('design:type', Boolean)], RecordManager.prototype, "isValid", void 0);

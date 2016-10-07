@@ -1,5 +1,5 @@
 <template ref="dataGrid">
-
+    ${recordManager.isValid} ${isValid}
     <!-- Child Grids -->
     <div if.bind="childMode">
         <div class="animated fadeIn panel panel-primary">
@@ -48,6 +48,7 @@
             <div class="panel-body">
                 <data-form show-toolbar.bind="false"
                            integrated-mode.bind="true"
+                           edit-mode.bind="formMode"
                            record.two-way="recordManager.currentRecord"
                            options.bind="options" />
             </div>
@@ -146,8 +147,7 @@
                                        edit-mode.bind="item.editMode"
                                        field-value.bind="item[column.name]"
                                        record.bind="item"
-                                       with-label.bind="false"
-                                       data-object.bind="dataGrid" />
+                                       with-label.bind="false" />
                             </div>
                         </td>
                     </tr>

@@ -29,7 +29,6 @@ export var ResizableFieldCustomAttribute = function () {
     ResizableFieldCustomAttribute.prototype.attached = function attached() {
         var _this = this;
 
-        console.log(interact);
         window.interact(this.element).resizable(Object.assign({}, this.options || {})).on('resizemove', function (event) {
             return _this.dispatch('resizable-field-onmove', event);
         });

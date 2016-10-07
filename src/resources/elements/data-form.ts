@@ -19,20 +19,16 @@ export class DataForm {
     @bindable onCancel: Function;
     @bindable integratedMode = false;
     @bindable showToolbar = false;
+    @bindable editMode: boolean = false;
 
     //#endregion
 
     //#region Properties
 
-    isValid = true;
-
-    validationStatus = {};
-
-    //fields;
-
     parent: any;
     element: Element;
     groups: Array<any> | null;
+    validationFields: Array<string>;
 
     //#endregion
 
@@ -73,7 +69,7 @@ export class DataForm {
     //#region Events
 
     recordChanged(newVal, oldVal) {
-        //console.log("form changed", this.validationStatus);
+        this.validate();
         this.dispatch('on-record-changed', { newValue: newVal, oldValue: oldVal, viewModel: this });
     }
     
@@ -83,7 +79,7 @@ export class DataForm {
 
     callSave(event) {
         this.validate();
-        if (this.isValid === true) {
+        if (this.record.isValid === true) {
             if (this.parent && this.onSave) {
                 this.onSave.call(this.parent, event);
             }
@@ -102,25 +98,26 @@ export class DataForm {
 
     //#region Validation
 
-    setValidationStatus(field, isValid) {
-        this.validationStatus[field] = isValid;  
-        this.validate();
+    get isValid() {
+        return this.record.isValid;
+    }
+
+    editModeChanged() {
+        if (this.editMode === true) {
+            setTimeout(() => this.validate(), 100);
+        }
     }
 
     validate() {
-        this.dispatch('on-before-validate', { viewModel: this });
+        if (this.editMode === true) {
+            this.dispatch('on-before-validate', {viewModel: this});
 
-        this.isValid = true;
-        let props = Object.getOwnPropertyNames(this.validationStatus);
-        for (let field of props) {
-            if (this.validationStatus[field] === false) {
-                this.isValid = false;
-            }
+            this.record.validate();
+
+            this.dispatch('on-after-validate', this);
+        } else {
+            this.dispatch('on-skip-validate', {viewModel: this});
         }
-
-        this.record.isValid = this.isValid;
-
-        this.dispatch('on-after-validate', this);
     }
 
     //#endregion

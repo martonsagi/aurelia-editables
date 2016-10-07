@@ -184,6 +184,11 @@ declare module 'aurelia-editables' {
         deleted: string;
     }
 
+    export type RecordValidationStateOptions = {
+        valid: string;
+        invalid: string;
+    }
+
     //#endregion
 
     export class Config {

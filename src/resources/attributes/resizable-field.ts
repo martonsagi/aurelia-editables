@@ -36,7 +36,6 @@ export class ResizableFieldCustomAttribute implements ComponentAttached {
     //#region au events
 
     attached() {
-        console.log(interact);
         (<any>window).interact(this.element)
             .resizable(Object.assign({}, this.options || {}))
             .on('resizemove', (event) => this.dispatch('resizable-field-onmove', event));

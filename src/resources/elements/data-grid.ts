@@ -17,7 +17,6 @@ export class DataGrid {
     //#region Bindables
 
     @bindable options: DataObjectViewModel;
-    @bindable currentRecord: Record | null = null;
     @bindable parentRecord: Record | null = null;
     @bindable entity;
     @bindable editMode: boolean = false;
@@ -55,7 +54,7 @@ export class DataGrid {
     pager: any;
     total: number;
 
-    isValid = true;
+    validationFields: Array<string>;
 
     pluginConfig: Config;
     deepObserver: DeepObserver;
@@ -168,8 +167,11 @@ export class DataGrid {
 
                 t.total = result.total;
 
+                t.loadValidationFields();
+
                 t.recordManager = new RecordManager(t.entity);
                 t.recordManager.queryModel = t.queryModel;
+                t.recordManager.setValidationFields(t.validationFields);
                 t.recordManager.load(result.data);
 
                 t.select(t.recordManager.records[0]);
@@ -226,6 +228,14 @@ export class DataGrid {
                 resolve();
             }
         });
+    }
+
+    loadValidationFields() {
+        let fields = this.options.columns
+            .filter(col => col.validation)
+            .map(col => col.name);
+
+        this.validationFields = fields;
     }
 
     refresh() {
@@ -327,18 +337,16 @@ export class DataGrid {
     select(rec) {
         this.dispatch('on-select', { viewModel: this });
 
-        if (this.currentRecord)
-            this.currentRecord.editMode = false;
+        if (this.recordManager.currentRecord)
+            this.recordManager.currentRecord.editMode = false;
+
+        if (rec) {
+            rec.editMode = this.editMode || this.formMode;
+        }
 
         this.recordManager.current(rec);
-        this.currentRecord = this.recordManager.currentRecord;
 
-        if (this.currentRecord)
-            this.currentRecord.editMode = this.editMode;
-
-        if (this.editMode === true) {
-            this.validate();
-        }
+        this.validate();
 
         return true;
     }
@@ -367,31 +375,32 @@ export class DataGrid {
 
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
-        this.isValid = false;
 
         this.select(this.recordManager.currentRecord);
         this.dispatch('on-record-add', { viewModel: this });
     }
 
     edit() {
-        this.editMode = true;
-        if (this.currentRecord) {
-            this.currentRecord.editMode = this.editMode;
-        }
+        this.editMode = !this.editMode;
+        this.recordManager.edit(this.editMode);
 
-        this.dispatch('on-record-edit', { viewModel: this });
+        if (this.editMode === true) {
+            this.dispatch('on-record-edit-begin', {viewModel: this});
+        } else {
+            this.dispatch('on-record-edit-end', {viewModel: this});
+        }
     }
 
     editForm(rec) {
         this.formMode = true;
         this.select(rec);
-
-        this.dispatch('on-form-show', { viewModel: this });
+        this.dispatch('on-record-edit-begin', { viewModel: this });
     }
 
     endEditForm() {
         this.formMode = false;
-        this.dispatch('on-form-hide', { viewModel: this });
+        this.recordManager.currentRecord.editMode = this.editMode || this.formMode;
+        this.dispatch('on-record-edit-end', { viewModel: this });
     }
 
     remove(item: Record) {
@@ -449,8 +458,8 @@ export class DataGrid {
                 (<Pager>this.pager.au.controller.viewModel).update();
             }
 
-            if (this.currentRecord) {
-                this.currentRecord.editMode = false;
+            if (this.recordManager.currentRecord) {
+                this.recordManager.currentRecord.editMode = false;
             }
             this.editMode = false;
 
@@ -474,13 +483,12 @@ export class DataGrid {
             this.recordManager.cancel();
 
         this.editMode = false;
-        if (this.currentRecord) {
-            this.currentRecord.editMode = false;
+        if (this.recordManager.currentRecord) {
+            this.recordManager.currentRecord.editMode = false;
             this.select(this.recordManager.currentRecord);
         }
 
         this.formMode = false;
-        this.isValid = true;
 
         this.dispatch('on-after-cancel', { viewModel: this });
     }
@@ -520,17 +528,6 @@ export class DataGrid {
         this.recordManager.validate();
 
         this.dispatch('on-after-validate', { viewModel: this });
-    }
-
-    validateCurrentRecord() {
-        this.recordManager.validateCurrentRecord();
-
-        this.dispatch('on-record-validated', { viewModel: this });
-    }
-
-    setValidationStatus(field, isValid) {
-        this.recordManager.setValidationStatus(field, isValid);
-        this.isValid = this.recordManager.isValid;
     }
 
     //#endregion

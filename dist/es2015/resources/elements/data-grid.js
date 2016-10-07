@@ -16,7 +16,6 @@ import { RecordManager } from '../../record-manager';
 import { DeepObserver } from '../../deep-observer';
 export let DataGrid = class DataGrid {
     constructor(element, deepObserver) {
-        this.currentRecord = null;
         this.parentRecord = null;
         this.editMode = false;
         this.formMode = false;
@@ -30,7 +29,6 @@ export let DataGrid = class DataGrid {
         this.columnFilters = null;
         this.sortSettings = null;
         this.pageSettings = { current: 1, size: 10 };
-        this.isValid = true;
         this.element = element;
         this.deepObserver = deepObserver;
         this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
@@ -98,8 +96,10 @@ export let DataGrid = class DataGrid {
                 t.columnFilters[childOptions.childFieldName] = this.parentRecord[childOptions.parentFieldName];
             }
             t.total = result.total;
+            t.loadValidationFields();
             t.recordManager = new RecordManager(t.entity);
             t.recordManager.queryModel = t.queryModel;
+            t.recordManager.setValidationFields(t.validationFields);
             t.recordManager.load(result.data);
             t.select(t.recordManager.records[0]);
             t.loading = false;
@@ -141,6 +141,10 @@ export let DataGrid = class DataGrid {
                 resolve();
             }
         });
+    }
+    loadValidationFields() {
+        let fields = this.options.columns.filter(col => col.validation).map(col => col.name);
+        this.validationFields = fields;
     }
     refresh() {
         this.dispatch('on-refresh', { viewModel: this });
@@ -211,13 +215,12 @@ export let DataGrid = class DataGrid {
     }
     select(rec) {
         this.dispatch('on-select', { viewModel: this });
-        if (this.currentRecord) this.currentRecord.editMode = false;
-        this.recordManager.current(rec);
-        this.currentRecord = this.recordManager.currentRecord;
-        if (this.currentRecord) this.currentRecord.editMode = this.editMode;
-        if (this.editMode === true) {
-            this.validate();
+        if (this.recordManager.currentRecord) this.recordManager.currentRecord.editMode = false;
+        if (rec) {
+            rec.editMode = this.editMode || this.formMode;
         }
+        this.recordManager.current(rec);
+        this.validate();
         return true;
     }
     changePage(newPage, newSize) {
@@ -234,25 +237,27 @@ export let DataGrid = class DataGrid {
         this.recordManager.add();
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
-        this.isValid = false;
         this.select(this.recordManager.currentRecord);
         this.dispatch('on-record-add', { viewModel: this });
     }
     edit() {
-        this.editMode = true;
-        if (this.currentRecord) {
-            this.currentRecord.editMode = this.editMode;
+        this.editMode = !this.editMode;
+        this.recordManager.edit(this.editMode);
+        if (this.editMode === true) {
+            this.dispatch('on-record-edit-begin', { viewModel: this });
+        } else {
+            this.dispatch('on-record-edit-end', { viewModel: this });
         }
-        this.dispatch('on-record-edit', { viewModel: this });
     }
     editForm(rec) {
         this.formMode = true;
         this.select(rec);
-        this.dispatch('on-form-show', { viewModel: this });
+        this.dispatch('on-record-edit-begin', { viewModel: this });
     }
     endEditForm() {
         this.formMode = false;
-        this.dispatch('on-form-hide', { viewModel: this });
+        this.recordManager.currentRecord.editMode = this.editMode || this.formMode;
+        this.dispatch('on-record-edit-end', { viewModel: this });
     }
     remove(item) {
         this.dispatch('on-record-remove', { viewModel: this, record: item });
@@ -284,8 +289,8 @@ export let DataGrid = class DataGrid {
             if (changes.deleted.length > 0 || changes.added.length > 0) {
                 this.pager.au.controller.viewModel.update();
             }
-            if (this.currentRecord) {
-                this.currentRecord.editMode = false;
+            if (this.recordManager.currentRecord) {
+                this.recordManager.currentRecord.editMode = false;
             }
             this.editMode = false;
             this.dispatch('on-after-save', { viewModel: this });
@@ -302,12 +307,11 @@ export let DataGrid = class DataGrid {
         this.dispatch('on-before-cancel', { viewModel: this, changes: changes });
         if (isDirty === true) this.recordManager.cancel();
         this.editMode = false;
-        if (this.currentRecord) {
-            this.currentRecord.editMode = false;
+        if (this.recordManager.currentRecord) {
+            this.recordManager.currentRecord.editMode = false;
             this.select(this.recordManager.currentRecord);
         }
         this.formMode = false;
-        this.isValid = true;
         this.dispatch('on-after-cancel', { viewModel: this });
     }
     onRecordsChange(splice) {
@@ -334,14 +338,6 @@ export let DataGrid = class DataGrid {
         this.dispatch('on-before-validate', { viewModel: this });
         this.recordManager.validate();
         this.dispatch('on-after-validate', { viewModel: this });
-    }
-    validateCurrentRecord() {
-        this.recordManager.validateCurrentRecord();
-        this.dispatch('on-record-validated', { viewModel: this });
-    }
-    setValidationStatus(field, isValid) {
-        this.recordManager.setValidationStatus(field, isValid);
-        this.isValid = this.recordManager.isValid;
     }
     showChildren(rec) {
         this.childMode = true;
@@ -386,7 +382,6 @@ export let DataGrid = class DataGrid {
     }
 };
 __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "options", void 0);
-__decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "currentRecord", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "parentRecord", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "entity", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "editMode", void 0);

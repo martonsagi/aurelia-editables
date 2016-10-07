@@ -3,7 +3,7 @@
 System.register(["aurelia-framework", "aurelia-validation", "../../record", "../../config"], function (_export, _context) {
     "use strict";
 
-    var bindable, inject, InlineViewStrategy, bindingMode, NewInstance, Container, BindingEngine, ValidationRules, ValidationController, validateTrigger, Record, Config, _typeof, __decorate, __metadata, Field;
+    var bindable, inject, InlineViewStrategy, bindingMode, NewInstance, BindingEngine, ValidationRules, ValidationController, validateTrigger, Record, RecordValidationState, Config, _typeof, __decorate, __metadata, Field;
 
     function _classCallCheck(instance, Constructor) {
         if (!(instance instanceof Constructor)) {
@@ -18,7 +18,6 @@ System.register(["aurelia-framework", "aurelia-validation", "../../record", "../
             InlineViewStrategy = _aureliaFramework.InlineViewStrategy;
             bindingMode = _aureliaFramework.bindingMode;
             NewInstance = _aureliaFramework.NewInstance;
-            Container = _aureliaFramework.Container;
             BindingEngine = _aureliaFramework.BindingEngine;
         }, function (_aureliaValidation) {
             ValidationRules = _aureliaValidation.ValidationRules;
@@ -26,6 +25,7 @@ System.register(["aurelia-framework", "aurelia-validation", "../../record", "../
             validateTrigger = _aureliaValidation.validateTrigger;
         }, function (_record) {
             Record = _record.Record;
+            RecordValidationState = _record.RecordValidationState;
         }, function (_config) {
             Config = _config.Config;
         }],
@@ -50,7 +50,7 @@ System.register(["aurelia-framework", "aurelia-validation", "../../record", "../
             };
 
             _export("Field", Field = function () {
-                function Field(controller) {
+                function Field(controller, element, config, bindingEngine) {
                     _classCallCheck(this, Field);
 
                     this.editableClass = '';
@@ -58,15 +58,13 @@ System.register(["aurelia-framework", "aurelia-validation", "../../record", "../
                     this.withLabel = true;
                     this.integratedMode = false;
                     this.validationMode = validateTrigger.change;
-                    this.isValid = true;
+                    this.isValid = false;
                     this.init = 0;
                     this.controller = controller;
                     this.controller.validateTrigger = validateTrigger.manual;
-                    this.element = Container.instance.get(Element);
+                    this.element = element;
                     this.fieldModel = this;
-                    this.pluginConfig = Container.instance.get(Config);
-                    var locator = Container.instance.get(BindingEngine);
-                    locator.propertyObserver(this, 'isValid').subscribe(this.isValidChanged.bind(this));
+                    this.pluginConfig = config;
                     this.dispatch('on-created', { viewModel: this });
                 }
 
@@ -83,81 +81,85 @@ System.register(["aurelia-framework", "aurelia-validation", "../../record", "../
                     this.dispatch('on-bind', { viewModel: this });
                 };
 
+                Field.prototype.editModeChanged = function editModeChanged() {
+                    var _this = this;
+
+                    if (this.editMode === true) {
+                        setTimeout(function () {
+                            return _this.validate();
+                        }, 100);
+                    }
+                };
+
                 Field.prototype.setValidation = function setValidation() {
                     if (this.options.validation) {
                         if (this.options.validationMode) this.validationMode = this.options.validationMode;
-                        var validationRules = ValidationRules.ensure('fieldValue'),
-                            props = Object.getOwnPropertyNames(this.options.validation);
-                        for (var _iterator = props, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-                            var _ref;
+                        var props = Object.getOwnPropertyNames(this.options.validation).filter(function (prop) {
+                            return prop !== '__observers__';
+                        });
+                        if (props.length > 0) {
+                            var validator = ValidationRules;
+                            for (var _iterator = props, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                                var _validator$ensure$dis;
 
-                            if (_isArray) {
-                                if (_i >= _iterator.length) break;
-                                _ref = _iterator[_i++];
-                            } else {
-                                _i = _iterator.next();
-                                if (_i.done) break;
-                                _ref = _i.value;
+                                var _ref;
+
+                                if (_isArray) {
+                                    if (_i >= _iterator.length) break;
+                                    _ref = _iterator[_i++];
+                                } else {
+                                    _i = _iterator.next();
+                                    if (_i.done) break;
+                                    _ref = _i.value;
+                                }
+
+                                var key = _ref;
+
+                                var ruleConfig = this.options.validation[key],
+                                    ruleName = key;
+                                validator = (_validator$ensure$dis = validator.ensure('fieldValue').displayName(this.options.title || this.options.name)).satisfiesRule.apply(_validator$ensure$dis, [ruleName].concat(ruleConfig)).on(this);
                             }
-
-                            var key = _ref;
-
-                            var ruleConfig = this.options.validation[key],
-                                ruleName = key,
-                                rule = void 0;
-                            switch (key) {
-                                case 'required':
-                                    ruleName = 'presence';
-                                    break;
-                            }
+                            this.validator = validator;
                         }
                     }
                 };
 
                 Field.prototype.validate = function validate() {
-                    var _this = this;
+                    var _this2 = this;
 
-                    if (this.integratedMode !== true) {
-                        this.init++;
-                        if (this.init <= 1) return;
-                    }
                     this.dispatch('on-before-validate', { viewModel: this });
                     this.controller.validate().then(function (errors) {
-                        _this.errors = errors;
-                        _this.isValid = _this.errors.length === 0;
-                        _this.dispatch('on-after-validate', { viewModel: _this });
+                        _this2.errors = errors;
+                        _this2.isValid = _this2.errors.length === 0;
+                        if (_this2.record && _this2.record.setValidationStatus) {
+                            _this2.record.setValidationStatus(_this2.options.name, _this2.isValid === true ? RecordValidationState.valid : RecordValidationState.invalid);
+                            _this2.record.validate();
+                        }
+                        _this2.dispatch('on-after-validate', { viewModel: _this2 });
                     });
                 };
 
-                Field.prototype.isValidChanged = function isValidChanged(newValue) {
-                    if (this.dataObject) {
-                        this.dataObject.au.controller.viewModel.setValidationStatus(this.options.name, newValue);
-                    }
-                };
-
                 Field.prototype.fieldValueChanged = function fieldValueChanged() {
-                    if (this.validationMode === validateTrigger.change) this.validate();
+                    if (this.editMode === true) {
+                        this.validate();
+                    }
                     this.setDisplayValue();
                     this.dispatch('on-fieldvalue-changed', { viewModel: this });
                 };
 
                 Field.prototype.blur = function blur() {
-                    if (this.validationMode === validateTrigger.blur || this.integratedMode === true) this.validate();
+                    this.validate();
                     this.dispatch('on-blur', { viewModel: this });
                 };
 
-                Field.prototype.setEditMode = function setEditMode() {
-                    this.editMode = !this.editMode;
-                };
-
                 Field.prototype.setDisplayValue = function setDisplayValue() {
-                    var _this2 = this;
+                    var _this3 = this;
 
                     this.displayValue = this.fieldValue;
                     switch (this.editorType) {
                         case 'dropdown':
                             var check = this.options.editor.values ? this.options.editor.values.find(function (f) {
-                                return f.value == _this2.fieldValue;
+                                return f.value == _this3.fieldValue;
                             }) : null;
                             this.displayValue = check ? check.text : this.fieldValue;
                             break;
@@ -173,11 +175,11 @@ System.register(["aurelia-framework", "aurelia-validation", "../../record", "../
                     }
                     switch (this.editorType) {
                         case 'icon':
-                            this.options.template = '<i class.bind="fieldValue"></i>';
+                            this.options.template = this.options.template || '<i class.bind="fieldValue"></i>';
                             this.editorType = 'text';
                             break;
                         case 'boolean':
-                            this.options.template = '<input if.bind="fieldValue === true" type="checkbox" checked.bind="fieldValue" disabled />';
+                            this.options.template = this.options.template || '<input if.bind="fieldValue === true" type="checkbox" checked.bind="fieldValue" disabled />';
                             break;
                         case 'number':
                             this.editorType = 'text';
@@ -224,7 +226,7 @@ System.register(["aurelia-framework", "aurelia-validation", "../../record", "../
             __decorate([bindable, __metadata('design:type', Boolean)], Field.prototype, "editMode", void 0);
             __decorate([bindable, __metadata('design:type', Boolean)], Field.prototype, "withLabel", void 0);
             __decorate([bindable, __metadata('design:type', Boolean)], Field.prototype, "integratedMode", void 0);
-            _export("Field", Field = __decorate([inject(NewInstance.of(ValidationController), Element), __metadata('design:paramtypes', [ValidationController])], Field));
+            _export("Field", Field = __decorate([inject(NewInstance.of(ValidationController), Element, Config, BindingEngine), __metadata('design:paramtypes', [ValidationController, Element, Config, BindingEngine])], Field));
         }
     };
 });

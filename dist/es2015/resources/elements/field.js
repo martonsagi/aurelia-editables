@@ -8,26 +8,24 @@ var __decorate = this && this.__decorate || function (decorators, target, key, d
 var __metadata = this && this.__metadata || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-import { bindable, inject, InlineViewStrategy, bindingMode, NewInstance, Container, BindingEngine } from 'aurelia-framework';
+import { bindable, inject, InlineViewStrategy, bindingMode, NewInstance, BindingEngine } from 'aurelia-framework';
 import { ValidationRules, ValidationController, validateTrigger } from 'aurelia-validation';
-import { Record } from '../../record';
+import { Record, RecordValidationState } from '../../record';
 import { Config } from '../../config';
 export let Field = class Field {
-    constructor(controller) {
+    constructor(controller, element, config, bindingEngine) {
         this.editableClass = '';
         this.editMode = false;
         this.withLabel = true;
         this.integratedMode = false;
         this.validationMode = validateTrigger.change;
-        this.isValid = true;
+        this.isValid = false;
         this.init = 0;
         this.controller = controller;
         this.controller.validateTrigger = validateTrigger.manual;
-        this.element = Container.instance.get(Element);
+        this.element = element;
         this.fieldModel = this;
-        this.pluginConfig = Container.instance.get(Config);
-        let locator = Container.instance.get(BindingEngine);
-        locator.propertyObserver(this, 'isValid').subscribe(this.isValidChanged.bind(this));
+        this.pluginConfig = config;
         this.dispatch('on-created', { viewModel: this });
     }
     bind() {
@@ -42,51 +40,48 @@ export let Field = class Field {
         this.setDisplayValue();
         this.dispatch('on-bind', { viewModel: this });
     }
+    editModeChanged() {
+        if (this.editMode === true) {
+            setTimeout(() => this.validate(), 100);
+        }
+    }
     setValidation() {
         if (this.options.validation) {
             if (this.options.validationMode) this.validationMode = this.options.validationMode;
-            let validationRules = ValidationRules.ensure('fieldValue'),
-                props = Object.getOwnPropertyNames(this.options.validation);
-            for (let key of props) {
-                let ruleConfig = this.options.validation[key],
-                    ruleName = key,
-                    rule;
-                switch (key) {
-                    case 'required':
-                        ruleName = 'presence';
-                        break;
+            let props = Object.getOwnPropertyNames(this.options.validation).filter(prop => prop !== '__observers__');
+            if (props.length > 0) {
+                let validator = ValidationRules;
+                for (let key of props) {
+                    let ruleConfig = this.options.validation[key],
+                        ruleName = key;
+                    validator = validator.ensure('fieldValue').displayName(this.options.title || this.options.name).satisfiesRule(ruleName, ...ruleConfig).on(this);
                 }
+                this.validator = validator;
             }
         }
     }
     validate() {
-        if (this.integratedMode !== true) {
-            this.init++;
-            if (this.init <= 1) return;
-        }
         this.dispatch('on-before-validate', { viewModel: this });
         this.controller.validate().then(errors => {
             this.errors = errors;
             this.isValid = this.errors.length === 0;
+            if (this.record && this.record.setValidationStatus) {
+                this.record.setValidationStatus(this.options.name, this.isValid === true ? RecordValidationState.valid : RecordValidationState.invalid);
+                this.record.validate();
+            }
             this.dispatch('on-after-validate', { viewModel: this });
         });
     }
-    isValidChanged(newValue) {
-        if (this.dataObject) {
-            this.dataObject.au.controller.viewModel.setValidationStatus(this.options.name, newValue);
-        }
-    }
     fieldValueChanged() {
-        if (this.validationMode === validateTrigger.change) this.validate();
+        if (this.editMode === true) {
+            this.validate();
+        }
         this.setDisplayValue();
         this.dispatch('on-fieldvalue-changed', { viewModel: this });
     }
     blur() {
-        if (this.validationMode === validateTrigger.blur || this.integratedMode === true) this.validate();
+        this.validate();
         this.dispatch('on-blur', { viewModel: this });
-    }
-    setEditMode() {
-        this.editMode = !this.editMode;
     }
     setDisplayValue() {
         this.displayValue = this.fieldValue;
@@ -106,11 +101,11 @@ export let Field = class Field {
         }
         switch (this.editorType) {
             case 'icon':
-                this.options.template = '<i class.bind="fieldValue"></i>';
+                this.options.template = this.options.template || '<i class.bind="fieldValue"></i>';
                 this.editorType = 'text';
                 break;
             case 'boolean':
-                this.options.template = '<input if.bind="fieldValue === true" type="checkbox" checked.bind="fieldValue" disabled />';
+                this.options.template = this.options.template || '<input if.bind="fieldValue === true" type="checkbox" checked.bind="fieldValue" disabled />';
                 break;
             case 'number':
                 this.editorType = 'text';
@@ -150,4 +145,4 @@ __decorate([bindable, __metadata('design:type', String)], Field.prototype, "edit
 __decorate([bindable, __metadata('design:type', Boolean)], Field.prototype, "editMode", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], Field.prototype, "withLabel", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], Field.prototype, "integratedMode", void 0);
-Field = __decorate([inject(NewInstance.of(ValidationController), Element), __metadata('design:paramtypes', [ValidationController])], Field);
+Field = __decorate([inject(NewInstance.of(ValidationController), Element, Config, BindingEngine), __metadata('design:paramtypes', [ValidationController, Element, Config, BindingEngine])], Field);

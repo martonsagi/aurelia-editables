@@ -1,20 +1,29 @@
 ﻿//#region import
 
-import { Container, BindingEngine } from 'aurelia-framework';
-import { RecordStateOptions } from 'aurelia-editables';
+import { Container, BindingEngine, observable } from 'aurelia-framework';
+import { RecordStateOptions, RecordValidationStateOptions } from 'aurelia-editables';
+import { RecordManager } from './record-manager';
 
 //#endregion
 
 export class Record {
+
     //#region Properties
 
     init: boolean;
-
     state: string;
-
-    isValid: boolean = true;
-
     editMode: boolean = false;
+
+    @observable()
+    validationStatus: any = {};
+    validationFields: Array<string> = [];
+
+    @observable()
+    isValid: boolean = false;
+
+    isValidationActivated: boolean = false;
+    bindingEngine: BindingEngine;
+    recordManager: RecordManager;
 
     //#endregion
 
@@ -27,20 +36,20 @@ export class Record {
             this[prop] = data[prop];
         }
 
-        let locator = Container.instance.get(BindingEngine);
+        this.bindingEngine = Container.instance.get(BindingEngine);
 
         for (let prop of props) {
             switch (prop) {
                 default:
-                locator
-                  .propertyObserver(this, prop)
-                  .subscribe(this.onChange.bind(this));
+                    this.bindingEngine
+                        .propertyObserver(this, prop)
+                        .subscribe(this.onChange.bind(this));
                 break;
                 case 'state':
                 case 'editMode':
-                locator
-                  .propertyObserver(this, prop)
-                  .subscribe(this.onStateChange.bind(this));
+                    this.bindingEngine
+                        .propertyObserver(this, prop)
+                        .subscribe(this.onStateChange.bind(this));
                     break;
             }
         }
@@ -48,11 +57,59 @@ export class Record {
         this.init = true;
     }
 
+    setRecordManager(manager: RecordManager) {
+        this.recordManager = manager;
+    }
+
+    setValidationFields(fieldNames: Array<string>) {
+        if (this.isValidationActivated === true)
+            return;
+
+        this.validationFields = fieldNames;
+        for (let name of fieldNames) {
+            this.validationStatus[name] = RecordValidationState.invalid;
+
+            this.bindingEngine
+                .propertyObserver(this.validationStatus, name)
+                .subscribe(this.onValidationFieldsChange.bind(this));
+        }
+
+        this.isValidationActivated = true;
+    }
+
+    onValidationFieldsChange(newValue, oldValue) {
+        this.validate();
+    }
+
+    setValidationStatus(field, state : string) {
+        this.validationStatus[field] = state;
+    }
+
+    validate() {
+        if (this.validationFields.length === 0) {
+            return;
+        }
+
+        this.isValid = true;
+
+        for (let field of this.validationFields) {
+            if (this.validationStatus[field] !== RecordValidationState.valid) {
+                this.isValid = false;
+            }
+        }
+    }
+
     //#region Events
 
     onChange() {
         if (this.init === true && this.state === RecordState.unchanged) {
             this.state = RecordState.modified;
+        }
+    }
+
+    isValidChanged() {
+        if (this.recordManager) {
+            this.recordManager.validate();
         }
     }
 
@@ -67,4 +124,9 @@ export const RecordState: RecordStateOptions = {
     unchanged: 'unchanged',
     modified: 'modified',
     deleted: 'deleted'
+};
+
+export const RecordValidationState: RecordValidationStateOptions = {
+    valid: 'valid',
+    invalid: 'invalid'
 };

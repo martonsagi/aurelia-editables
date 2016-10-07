@@ -42,9 +42,9 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                 function RecordManager(template) {
                     _classCallCheck(this, RecordManager);
 
+                    this.isValid = false;
                     this.queryModel = { filters: [] };
-                    this.validationStatus = {};
-                    this.isValid = true;
+                    this.validationFields = [];
                     this._template = template;
                     this.records = new Array();
                     this.currentRecord = {};
@@ -52,6 +52,9 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
 
                 RecordManager.prototype.current = function current(item) {
                     this.currentRecord = item;
+                    if (this.currentRecord.editMode === true) {
+                        this.currentRecord.setValidationFields(this.validationFields);
+                    }
                 };
 
                 RecordManager.prototype.load = function load(data) {
@@ -71,6 +74,7 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                         var row = _ref;
 
                         var record = new Record(row);
+                        record.setRecordManager(this);
                         this.records.push(record);
                     }
                 };
@@ -78,7 +82,10 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                 RecordManager.prototype.add = function add() {
                     var templateData = JSON.parse(JSON.stringify(this._template));
                     var newRow = new Record(templateData, RecordState.added);
-                    newRow.isValid = false;
+                    newRow.setRecordManager(this);
+                    if (this.validationFields && this.validationFields.length > 0) {
+                        newRow.setValidationFields(this.validationFields);
+                    }
                     this.isValid = false;
                     this.records.unshift(newRow);
                     this.current(this.records[0]);
@@ -99,6 +106,20 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                         this.currentRecord[filter.field] = filter.value;
                     }
                     this.validate();
+                };
+
+                RecordManager.prototype.edit = function edit(toggle) {
+                    if (toggle === true) {
+                        if (this.currentRecord) {
+                            this.currentRecord.setValidationFields(this.validationFields);
+                            this.currentRecord.editMode = true;
+                            this.currentRecord.validate();
+                        }
+                    } else {
+                        if (this.currentRecord) {
+                            this.currentRecord.editMode = false;
+                        }
+                    }
                 };
 
                 RecordManager.prototype.remove = function remove(item) {
@@ -272,45 +293,19 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                     };
                 };
 
+                RecordManager.prototype.setValidationFields = function setValidationFields(fieldNames) {
+                    this.validationFields = fieldNames;
+                };
+
                 RecordManager.prototype.validate = function validate() {
-                    this.isValid = true;
+                    this.isValid = false;
+                    if (this.dirty() === false) {
+                        return;
+                    }
                     var rows = this.records.filter(function (item) {
-                        return item.state !== RecordState.deleted;
+                        return (item.state === RecordState.added || item.state === RecordState.modified) && item.isValid === false;
                     });
-                    for (var _iterator9 = rows, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
-                        var _ref9;
-
-                        if (_isArray9) {
-                            if (_i9 >= _iterator9.length) break;
-                            _ref9 = _iterator9[_i9++];
-                        } else {
-                            _i9 = _iterator9.next();
-                            if (_i9.done) break;
-                            _ref9 = _i9.value;
-                        }
-
-                        var row = _ref9;
-
-                        if (row.isValid !== true) {
-                            this.isValid = false;
-                        }
-                    }
-                };
-
-                RecordManager.prototype.validateCurrentRecord = function validateCurrentRecord() {
-                    var isValid = true;
-                    for (var field in this.validationStatus) {
-                        if (this.validationStatus[field] === false) {
-                            isValid = false;
-                        }
-                    }
-                    this.currentRecord.isValid = isValid;
-                };
-
-                RecordManager.prototype.setValidationStatus = function setValidationStatus(field, isValid) {
-                    this.validationStatus[field] = isValid;
-                    this.validateCurrentRecord();
-                    this.validate();
+                    this.isValid = rows.length === 0;
                 };
 
                 return RecordManager;
@@ -318,7 +313,8 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
 
             _export("RecordManager", RecordManager);
 
-            __decorate([observable(), __metadata('design:type', Array)], RecordManager.prototype, "records", void 0);
+            __decorate([observable, __metadata('design:type', Object)], RecordManager.prototype, "currentRecord", void 0);
+            __decorate([observable(), __metadata('design:type', Boolean)], RecordManager.prototype, "isValid", void 0);
         }
     };
 });

@@ -1,20 +1,37 @@
-'use strict';
+"use strict";
 
 Object.defineProperty(exports, "__esModule", {
     value: true
 });
-exports.RecordState = exports.Record = undefined;
+exports.RecordValidationState = exports.RecordState = exports.Record = undefined;
 
-var _aureliaFramework = require('aurelia-framework');
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+
+var _aureliaFramework = require("aurelia-framework");
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+var __decorate = undefined && undefined.__decorate || function (decorators, target, key, desc) {
+    var c = arguments.length,
+        r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc,
+        d;
+    if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);else for (var i = decorators.length - 1; i >= 0; i--) {
+        if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    }return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var __metadata = undefined && undefined.__metadata || function (k, v) {
+    if ((typeof Reflect === "undefined" ? "undefined" : _typeof(Reflect)) === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
+};
 
 var Record = exports.Record = function () {
     function Record(data, state) {
         _classCallCheck(this, Record);
 
-        this.isValid = true;
         this.editMode = false;
+        this.validationStatus = {};
+        this.validationFields = [];
+        this.isValid = false;
+        this.isValidationActivated = false;
         this.init = false;
         data.state = state || RecordState.unchanged;
         var props = Object.getOwnPropertyNames(data);
@@ -34,7 +51,7 @@ var Record = exports.Record = function () {
 
             this[prop] = data[prop];
         }
-        var locator = _aureliaFramework.Container.instance.get(_aureliaFramework.BindingEngine);
+        this.bindingEngine = _aureliaFramework.Container.instance.get(_aureliaFramework.BindingEngine);
         for (var _iterator2 = props, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
             var _ref2;
 
@@ -51,20 +68,86 @@ var Record = exports.Record = function () {
 
             switch (_prop) {
                 default:
-                    locator.propertyObserver(this, _prop).subscribe(this.onChange.bind(this));
+                    this.bindingEngine.propertyObserver(this, _prop).subscribe(this.onChange.bind(this));
                     break;
                 case 'state':
                 case 'editMode':
-                    locator.propertyObserver(this, _prop).subscribe(this.onStateChange.bind(this));
+                    this.bindingEngine.propertyObserver(this, _prop).subscribe(this.onStateChange.bind(this));
                     break;
             }
         }
         this.init = true;
     }
 
+    Record.prototype.setRecordManager = function setRecordManager(manager) {
+        this.recordManager = manager;
+    };
+
+    Record.prototype.setValidationFields = function setValidationFields(fieldNames) {
+        if (this.isValidationActivated === true) return;
+        this.validationFields = fieldNames;
+        for (var _iterator3 = fieldNames, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+            var _ref3;
+
+            if (_isArray3) {
+                if (_i3 >= _iterator3.length) break;
+                _ref3 = _iterator3[_i3++];
+            } else {
+                _i3 = _iterator3.next();
+                if (_i3.done) break;
+                _ref3 = _i3.value;
+            }
+
+            var name = _ref3;
+
+            this.validationStatus[name] = RecordValidationState.invalid;
+            this.bindingEngine.propertyObserver(this.validationStatus, name).subscribe(this.onValidationFieldsChange.bind(this));
+        }
+        this.isValidationActivated = true;
+    };
+
+    Record.prototype.onValidationFieldsChange = function onValidationFieldsChange(newValue, oldValue) {
+        this.validate();
+    };
+
+    Record.prototype.setValidationStatus = function setValidationStatus(field, state) {
+        this.validationStatus[field] = state;
+    };
+
+    Record.prototype.validate = function validate() {
+        if (this.validationFields.length === 0) {
+            return;
+        }
+        this.isValid = true;
+        for (var _iterator4 = this.validationFields, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+            var _ref4;
+
+            if (_isArray4) {
+                if (_i4 >= _iterator4.length) break;
+                _ref4 = _iterator4[_i4++];
+            } else {
+                _i4 = _iterator4.next();
+                if (_i4.done) break;
+                _ref4 = _i4.value;
+            }
+
+            var field = _ref4;
+
+            if (this.validationStatus[field] !== RecordValidationState.valid) {
+                this.isValid = false;
+            }
+        }
+    };
+
     Record.prototype.onChange = function onChange() {
         if (this.init === true && this.state === RecordState.unchanged) {
             this.state = RecordState.modified;
+        }
+    };
+
+    Record.prototype.isValidChanged = function isValidChanged() {
+        if (this.recordManager) {
+            this.recordManager.validate();
         }
     };
 
@@ -73,9 +156,15 @@ var Record = exports.Record = function () {
     return Record;
 }();
 
+__decorate([(0, _aureliaFramework.observable)(), __metadata('design:type', Object)], Record.prototype, "validationStatus", void 0);
+__decorate([(0, _aureliaFramework.observable)(), __metadata('design:type', Boolean)], Record.prototype, "isValid", void 0);
 var RecordState = exports.RecordState = {
     added: 'added',
     unchanged: 'unchanged',
     modified: 'modified',
     deleted: 'deleted'
+};
+var RecordValidationState = exports.RecordValidationState = {
+    valid: 'valid',
+    invalid: 'invalid'
 };

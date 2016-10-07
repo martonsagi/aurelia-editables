@@ -14,8 +14,7 @@ export let DataForm = class DataForm {
     constructor(element) {
         this.integratedMode = false;
         this.showToolbar = false;
-        this.isValid = true;
-        this.validationStatus = {};
+        this.editMode = false;
         this.element = element;
         this.dispatch('on-created', { viewModel: this });
     }
@@ -38,11 +37,12 @@ export let DataForm = class DataForm {
         this.dispatch('on-attached', this);
     }
     recordChanged(newVal, oldVal) {
+        this.validate();
         this.dispatch('on-record-changed', { newValue: newVal, oldValue: oldVal, viewModel: this });
     }
     callSave(event) {
         this.validate();
-        if (this.isValid === true) {
+        if (this.record.isValid === true) {
             if (this.parent && this.onSave) {
                 this.onSave.call(this.parent, event);
             }
@@ -54,21 +54,22 @@ export let DataForm = class DataForm {
         }
         this.validate();
     }
-    setValidationStatus(field, isValid) {
-        this.validationStatus[field] = isValid;
-        this.validate();
+    get isValid() {
+        return this.record.isValid;
+    }
+    editModeChanged() {
+        if (this.editMode === true) {
+            setTimeout(() => this.validate(), 100);
+        }
     }
     validate() {
-        this.dispatch('on-before-validate', { viewModel: this });
-        this.isValid = true;
-        let props = Object.getOwnPropertyNames(this.validationStatus);
-        for (let field of props) {
-            if (this.validationStatus[field] === false) {
-                this.isValid = false;
-            }
+        if (this.editMode === true) {
+            this.dispatch('on-before-validate', { viewModel: this });
+            this.record.validate();
+            this.dispatch('on-after-validate', this);
+        } else {
+            this.dispatch('on-skip-validate', { viewModel: this });
         }
-        this.record.isValid = this.isValid;
-        this.dispatch('on-after-validate', this);
     }
     dispatch(name, data) {
         this.element.dispatchEvent(new CustomEvent(name, {
@@ -83,4 +84,5 @@ __decorate([bindable, __metadata('design:type', Function)], DataForm.prototype, 
 __decorate([bindable, __metadata('design:type', Function)], DataForm.prototype, "onCancel", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataForm.prototype, "integratedMode", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataForm.prototype, "showToolbar", void 0);
+__decorate([bindable, __metadata('design:type', Boolean)], DataForm.prototype, "editMode", void 0);
 DataForm = __decorate([autoinject, __metadata('design:paramtypes', [Element])], DataForm);

@@ -14,11 +14,25 @@
                 <i class="fa fa-plus"></i> <span class="hidden-xs"> ${'Add' | t}</span>
             </button>
 
-            <button if.bind="options.editing === true" class="btn btn-default" click.delegate="edit($event)" title="${'Edit' | t}">
-                <i class="fa fa-pencil"></i> <span class="hidden-xs"> ${'Edit' | t}</span>
+            <button if.bind="options.editing === true && editMode === false && formMode == false"
+                    class="btn btn-default"
+                    click.delegate="edit($event)"
+                    title="${'Edit' | t}">
+
+                <i class="fa fa-pencil-square"></i> <span class="hidden-xs"> ${'Edit' | t}</span>
+
             </button>
 
-            <button if.bind="options.editing === true" disabled.bind="editMode === true && isValid !== true" class="btn btn-success" click.delegate="save($event)" title="${'Save' | t}">
+            <button if.bind="options.editing === true && editMode === true && formMode == false"
+                    class="btn btn-primary"
+                    click.delegate="edit($event)"
+                    title="${'Finish Edit' | t}">
+
+                <i class="fa fa-pencil-square-o"></i> <span class="hidden-xs"> ${'Finish Edit' | t}</span>
+
+            </button>
+
+            <button if.bind="options.editing === true" disabled.bind="recordManager.isValid !== true" class="btn btn-success" click.delegate="save($event)" title="${'Save' | t}">
                 <i class="fa fa-floppy-o"></i> <span class="hidden-xs"> ${'Save' | t}</span>
             </button>
 

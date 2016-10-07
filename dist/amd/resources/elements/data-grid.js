@@ -51,7 +51,6 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
         function DataGrid(element, deepObserver) {
             _classCallCheck(this, DataGrid);
 
-            this.currentRecord = null;
             this.parentRecord = null;
             this.editMode = false;
             this.formMode = false;
@@ -65,7 +64,6 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.columnFilters = null;
             this.sortSettings = null;
             this.pageSettings = { current: 1, size: 10 };
-            this.isValid = true;
             this.element = element;
             this.deepObserver = deepObserver;
             this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
@@ -141,8 +139,10 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                     t.columnFilters[childOptions.childFieldName] = _this2.parentRecord[childOptions.parentFieldName];
                 }
                 t.total = result.total;
+                t.loadValidationFields();
                 t.recordManager = new _recordManager.RecordManager(t.entity);
                 t.recordManager.queryModel = t.queryModel;
+                t.recordManager.setValidationFields(t.validationFields);
                 t.recordManager.load(result.data);
                 t.select(t.recordManager.records[0]);
                 t.loading = false;
@@ -208,6 +208,15 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                     resolve();
                 }
             });
+        };
+
+        DataGrid.prototype.loadValidationFields = function loadValidationFields() {
+            var fields = this.options.columns.filter(function (col) {
+                return col.validation;
+            }).map(function (col) {
+                return col.name;
+            });
+            this.validationFields = fields;
         };
 
         DataGrid.prototype.refresh = function refresh() {
@@ -298,13 +307,12 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
 
         DataGrid.prototype.select = function select(rec) {
             this.dispatch('on-select', { viewModel: this });
-            if (this.currentRecord) this.currentRecord.editMode = false;
-            this.recordManager.current(rec);
-            this.currentRecord = this.recordManager.currentRecord;
-            if (this.currentRecord) this.currentRecord.editMode = this.editMode;
-            if (this.editMode === true) {
-                this.validate();
+            if (this.recordManager.currentRecord) this.recordManager.currentRecord.editMode = false;
+            if (rec) {
+                rec.editMode = this.editMode || this.formMode;
             }
+            this.recordManager.current(rec);
+            this.validate();
             return true;
         };
 
@@ -323,28 +331,30 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.recordManager.add();
             this.editMode = true;
             this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
-            this.isValid = false;
             this.select(this.recordManager.currentRecord);
             this.dispatch('on-record-add', { viewModel: this });
         };
 
         DataGrid.prototype.edit = function edit() {
-            this.editMode = true;
-            if (this.currentRecord) {
-                this.currentRecord.editMode = this.editMode;
+            this.editMode = !this.editMode;
+            this.recordManager.edit(this.editMode);
+            if (this.editMode === true) {
+                this.dispatch('on-record-edit-begin', { viewModel: this });
+            } else {
+                this.dispatch('on-record-edit-end', { viewModel: this });
             }
-            this.dispatch('on-record-edit', { viewModel: this });
         };
 
         DataGrid.prototype.editForm = function editForm(rec) {
             this.formMode = true;
             this.select(rec);
-            this.dispatch('on-form-show', { viewModel: this });
+            this.dispatch('on-record-edit-begin', { viewModel: this });
         };
 
         DataGrid.prototype.endEditForm = function endEditForm() {
             this.formMode = false;
-            this.dispatch('on-form-hide', { viewModel: this });
+            this.recordManager.currentRecord.editMode = this.editMode || this.formMode;
+            this.dispatch('on-record-edit-end', { viewModel: this });
         };
 
         DataGrid.prototype.remove = function remove(item) {
@@ -386,8 +396,8 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                 if (changes.deleted.length > 0 || changes.added.length > 0) {
                     _this4.pager.au.controller.viewModel.update();
                 }
-                if (_this4.currentRecord) {
-                    _this4.currentRecord.editMode = false;
+                if (_this4.recordManager.currentRecord) {
+                    _this4.recordManager.currentRecord.editMode = false;
                 }
                 _this4.editMode = false;
                 _this4.dispatch('on-after-save', { viewModel: _this4 });
@@ -405,12 +415,11 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.dispatch('on-before-cancel', { viewModel: this, changes: changes });
             if (isDirty === true) this.recordManager.cancel();
             this.editMode = false;
-            if (this.currentRecord) {
-                this.currentRecord.editMode = false;
+            if (this.recordManager.currentRecord) {
+                this.recordManager.currentRecord.editMode = false;
                 this.select(this.recordManager.currentRecord);
             }
             this.formMode = false;
-            this.isValid = true;
             this.dispatch('on-after-cancel', { viewModel: this });
         };
 
@@ -440,16 +449,6 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.dispatch('on-before-validate', { viewModel: this });
             this.recordManager.validate();
             this.dispatch('on-after-validate', { viewModel: this });
-        };
-
-        DataGrid.prototype.validateCurrentRecord = function validateCurrentRecord() {
-            this.recordManager.validateCurrentRecord();
-            this.dispatch('on-record-validated', { viewModel: this });
-        };
-
-        DataGrid.prototype.setValidationStatus = function setValidationStatus(field, isValid) {
-            this.recordManager.setValidationStatus(field, isValid);
-            this.isValid = this.recordManager.isValid;
         };
 
         DataGrid.prototype.showChildren = function showChildren(rec) {
@@ -510,7 +509,6 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
         return DataGrid;
     }();
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataGrid.prototype, "options", void 0);
-    __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataGrid.prototype, "currentRecord", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataGrid.prototype, "parentRecord", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataGrid.prototype, "entity", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "editMode", void 0);

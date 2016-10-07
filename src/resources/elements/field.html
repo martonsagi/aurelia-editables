@@ -7,7 +7,7 @@
 
         <compose view-model="${editorViewModel}" model.bind="fieldModel"></compose>
 
-        <div if.bind="!isValid" class="animated fadeInDown">
+        <div if.bind="isValid !== true" class="animated fadeInDown">
             <ul class="error-list">
                 <li repeat.for="errorInfo of errors">
                     ${errorInfo.message}

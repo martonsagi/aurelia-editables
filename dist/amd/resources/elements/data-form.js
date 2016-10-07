@@ -12,6 +12,24 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
         }
     }
 
+    var _createClass = function () {
+        function defineProperties(target, props) {
+            for (var i = 0; i < props.length; i++) {
+                var descriptor = props[i];
+                descriptor.enumerable = descriptor.enumerable || false;
+                descriptor.configurable = true;
+                if ("value" in descriptor) descriptor.writable = true;
+                Object.defineProperty(target, descriptor.key, descriptor);
+            }
+        }
+
+        return function (Constructor, protoProps, staticProps) {
+            if (protoProps) defineProperties(Constructor.prototype, protoProps);
+            if (staticProps) defineProperties(Constructor, staticProps);
+            return Constructor;
+        };
+    }();
+
     var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
         return typeof obj;
     } : function (obj) {
@@ -35,8 +53,7 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
 
             this.integratedMode = false;
             this.showToolbar = false;
-            this.isValid = true;
-            this.validationStatus = {};
+            this.editMode = false;
             this.element = element;
             this.dispatch('on-created', { viewModel: this });
         }
@@ -85,12 +102,13 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
         };
 
         DataForm.prototype.recordChanged = function recordChanged(newVal, oldVal) {
+            this.validate();
             this.dispatch('on-record-changed', { newValue: newVal, oldValue: oldVal, viewModel: this });
         };
 
         DataForm.prototype.callSave = function callSave(event) {
             this.validate();
-            if (this.isValid === true) {
+            if (this.record.isValid === true) {
                 if (this.parent && this.onSave) {
                     this.onSave.call(this.parent, event);
                 }
@@ -104,35 +122,24 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
             this.validate();
         };
 
-        DataForm.prototype.setValidationStatus = function setValidationStatus(field, isValid) {
-            this.validationStatus[field] = isValid;
-            this.validate();
+        DataForm.prototype.editModeChanged = function editModeChanged() {
+            var _this2 = this;
+
+            if (this.editMode === true) {
+                setTimeout(function () {
+                    return _this2.validate();
+                }, 100);
+            }
         };
 
         DataForm.prototype.validate = function validate() {
-            this.dispatch('on-before-validate', { viewModel: this });
-            this.isValid = true;
-            var props = Object.getOwnPropertyNames(this.validationStatus);
-            for (var _iterator2 = props, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-                var _ref2;
-
-                if (_isArray2) {
-                    if (_i2 >= _iterator2.length) break;
-                    _ref2 = _iterator2[_i2++];
-                } else {
-                    _i2 = _iterator2.next();
-                    if (_i2.done) break;
-                    _ref2 = _i2.value;
-                }
-
-                var field = _ref2;
-
-                if (this.validationStatus[field] === false) {
-                    this.isValid = false;
-                }
+            if (this.editMode === true) {
+                this.dispatch('on-before-validate', { viewModel: this });
+                this.record.validate();
+                this.dispatch('on-after-validate', this);
+            } else {
+                this.dispatch('on-skip-validate', { viewModel: this });
             }
-            this.record.isValid = this.isValid;
-            this.dispatch('on-after-validate', this);
         };
 
         DataForm.prototype.dispatch = function dispatch(name, data) {
@@ -142,6 +149,13 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
             }));
         };
 
+        _createClass(DataForm, [{
+            key: "isValid",
+            get: function get() {
+                return this.record.isValid;
+            }
+        }]);
+
         return DataForm;
     }();
     __decorate([(0, _aureliaFramework.bindable)({ defaultBindingMode: _aureliaFramework.bindingMode.twoWay }), __metadata('design:type', _record.Record)], DataForm.prototype, "record", void 0);
@@ -150,5 +164,6 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Function)], DataForm.prototype, "onCancel", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataForm.prototype, "integratedMode", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataForm.prototype, "showToolbar", void 0);
+    __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataForm.prototype, "editMode", void 0);
     exports.DataForm = DataForm = __decorate([_aureliaFramework.autoinject, __metadata('design:paramtypes', [Element])], DataForm);
 });

@@ -29,9 +29,9 @@ var RecordManager = exports.RecordManager = function () {
     function RecordManager(template) {
         _classCallCheck(this, RecordManager);
 
+        this.isValid = false;
         this.queryModel = { filters: [] };
-        this.validationStatus = {};
-        this.isValid = true;
+        this.validationFields = [];
         this._template = template;
         this.records = new Array();
         this.currentRecord = {};
@@ -39,6 +39,9 @@ var RecordManager = exports.RecordManager = function () {
 
     RecordManager.prototype.current = function current(item) {
         this.currentRecord = item;
+        if (this.currentRecord.editMode === true) {
+            this.currentRecord.setValidationFields(this.validationFields);
+        }
     };
 
     RecordManager.prototype.load = function load(data) {
@@ -58,6 +61,7 @@ var RecordManager = exports.RecordManager = function () {
             var row = _ref;
 
             var record = new _record.Record(row);
+            record.setRecordManager(this);
             this.records.push(record);
         }
     };
@@ -65,7 +69,10 @@ var RecordManager = exports.RecordManager = function () {
     RecordManager.prototype.add = function add() {
         var templateData = JSON.parse(JSON.stringify(this._template));
         var newRow = new _record.Record(templateData, _record.RecordState.added);
-        newRow.isValid = false;
+        newRow.setRecordManager(this);
+        if (this.validationFields && this.validationFields.length > 0) {
+            newRow.setValidationFields(this.validationFields);
+        }
         this.isValid = false;
         this.records.unshift(newRow);
         this.current(this.records[0]);
@@ -86,6 +93,20 @@ var RecordManager = exports.RecordManager = function () {
             this.currentRecord[filter.field] = filter.value;
         }
         this.validate();
+    };
+
+    RecordManager.prototype.edit = function edit(toggle) {
+        if (toggle === true) {
+            if (this.currentRecord) {
+                this.currentRecord.setValidationFields(this.validationFields);
+                this.currentRecord.editMode = true;
+                this.currentRecord.validate();
+            }
+        } else {
+            if (this.currentRecord) {
+                this.currentRecord.editMode = false;
+            }
+        }
     };
 
     RecordManager.prototype.remove = function remove(item) {
@@ -259,48 +280,23 @@ var RecordManager = exports.RecordManager = function () {
         };
     };
 
+    RecordManager.prototype.setValidationFields = function setValidationFields(fieldNames) {
+        this.validationFields = fieldNames;
+    };
+
     RecordManager.prototype.validate = function validate() {
-        this.isValid = true;
+        this.isValid = false;
+        if (this.dirty() === false) {
+            return;
+        }
         var rows = this.records.filter(function (item) {
-            return item.state !== _record.RecordState.deleted;
+            return (item.state === _record.RecordState.added || item.state === _record.RecordState.modified) && item.isValid === false;
         });
-        for (var _iterator9 = rows, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
-            var _ref9;
-
-            if (_isArray9) {
-                if (_i9 >= _iterator9.length) break;
-                _ref9 = _iterator9[_i9++];
-            } else {
-                _i9 = _iterator9.next();
-                if (_i9.done) break;
-                _ref9 = _i9.value;
-            }
-
-            var row = _ref9;
-
-            if (row.isValid !== true) {
-                this.isValid = false;
-            }
-        }
-    };
-
-    RecordManager.prototype.validateCurrentRecord = function validateCurrentRecord() {
-        var isValid = true;
-        for (var field in this.validationStatus) {
-            if (this.validationStatus[field] === false) {
-                isValid = false;
-            }
-        }
-        this.currentRecord.isValid = isValid;
-    };
-
-    RecordManager.prototype.setValidationStatus = function setValidationStatus(field, isValid) {
-        this.validationStatus[field] = isValid;
-        this.validateCurrentRecord();
-        this.validate();
+        this.isValid = rows.length === 0;
     };
 
     return RecordManager;
 }();
 
-__decorate([(0, _aureliaFramework.observable)(), __metadata('design:type', Array)], RecordManager.prototype, "records", void 0);
+__decorate([_aureliaFramework.observable, __metadata('design:type', Object)], RecordManager.prototype, "currentRecord", void 0);
+__decorate([(0, _aureliaFramework.observable)(), __metadata('design:type', Boolean)], RecordManager.prototype, "isValid", void 0);

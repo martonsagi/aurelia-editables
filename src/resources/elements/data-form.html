@@ -7,12 +7,12 @@
                 </div>
                 <div class="pull-right" style="padding: 5px 0;">
                     <button if.bind="options.editing === true"
-                            disabled.bind="isValid !== true || record.state !== 'modified'"
+                            disabled.bind="record.isValid !== true || record.state !== 'modified'"
                             class="btn btn-success"
                             click.trigger="callSave($event)"
                             title="*{'Save' | t}">
                         <i class="fa fa-check"></i>
-                        Save
+                        ${ 'Save' | t }
                     </button>
                     <button if.bind="options.editing === true"
                             disabled.bind="record.state !== 'modified'"
@@ -20,7 +20,7 @@
                             click.trigger="callCancel($event)"
                             title="${'Cancel' | t}">
                         <i class="fa fa-ban"></i>
-                        Cancel
+                        ${ 'Cancel' | t }
                     </button>
                 </div>
                 <span class="clearfix"></span>
@@ -39,13 +39,12 @@
                                  repeat.for="column of group.fields">
 
                                 <field options.bind="column"
-                                       edit-mode.bind="true"
+                                       edit-mode.bind="editMode"
                                        field-value.bind="record[column.name]"
                                        record.bind="record"
                                        with-label.bind="true"
                                        editable-class="form-group"
-                                       integrated-mode.bind="integratedMode"
-                                       data-object.bind="dataForm" />
+                                       integrated-mode.bind="integratedMode" />
                             </div>
                         </div>
                     </div>

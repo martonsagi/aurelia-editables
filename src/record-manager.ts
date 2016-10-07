@@ -6,14 +6,16 @@ export class RecordManager {
 
     private _template: any;
 
+    @observable
     currentRecord: Record | null;
-    queryModel: QueryModel = { filters: []  };
-    originalRecords: any;
-    validationStatus = {};
-    isValid: boolean = true;
 
     @observable()
+    isValid: boolean = false;
+
     records: Array<Record>;
+    queryModel: QueryModel = { filters: []  };
+    originalRecords: any;
+    validationFields: Array<string> = [];
 
     constructor(template?: any) {
         this._template = template;
@@ -23,6 +25,9 @@ export class RecordManager {
 
     current(item: Record) {
         this.currentRecord = item;
+        if (this.currentRecord.editMode === true) {
+            this.currentRecord.setValidationFields(this.validationFields);
+        }
     }
 
     load(data) {
@@ -30,6 +35,7 @@ export class RecordManager {
 
         for (let row of data) {
             let record = new Record(row);
+            record.setRecordManager(this);
             this.records.push(record);
         }
     }
@@ -38,7 +44,12 @@ export class RecordManager {
         let templateData = JSON.parse(JSON.stringify(this._template));
 
         let newRow = new Record(templateData, RecordState.added);
-        newRow.isValid = false;
+        newRow.setRecordManager(this);
+        if (this.validationFields && this.validationFields.length > 0) {
+            newRow.setValidationFields(this.validationFields);
+        }
+
+        //newRow.isValid = false;
         this.isValid = false;
 
         this.records.unshift(newRow);
@@ -49,6 +60,23 @@ export class RecordManager {
         }
 
         this.validate();
+    }
+
+    edit(toggle) {
+        if (toggle === true) {
+            if (this.currentRecord) {
+                // loaded records have no validation by default to enhance performance
+                // initialize record validation when it goes into edit mode
+                this.currentRecord.setValidationFields(this.validationFields);
+
+                this.currentRecord.editMode = true;
+                this.currentRecord.validate();
+            }
+        } else {
+            if (this.currentRecord) {
+                this.currentRecord.editMode = false;
+            }
+        }
     }
 
     remove(item: Record) {
@@ -163,30 +191,23 @@ export class RecordManager {
         };
     }
 
+    setValidationFields(fieldNames: Array<string>) {
+        this.validationFields = fieldNames;
+    }
+
     validate() {
-        this.isValid = true;
-        let rows = this.records.filter(item => item.state !== RecordState.deleted);
-        for (let row of rows) {
-            if (row.isValid !== true) {
-                this.isValid = false;
-            }
-        }
-    }
+        this.isValid = false;
 
-    validateCurrentRecord() {
-        let isValid = true;
-        for (let field in this.validationStatus) {
-            if (this.validationStatus[field] === false) {
-                isValid = false;
-            }
+        if (this.dirty() === false) {
+            return;
         }
 
-        this.currentRecord.isValid = isValid;
-    }
+        let rows = this.records.filter(item =>
+            (item.state === RecordState.added || item.state === RecordState.modified)
+            &&
+            item.isValid === false
+        );
 
-    setValidationStatus(field, isValid) {
-        this.validationStatus[field] = isValid;
-        this.validateCurrentRecord();
-        this.validate();
+        this.isValid = rows.length === 0;
     }
 }

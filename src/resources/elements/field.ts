@@ -1,14 +1,15 @@
 ﻿//#region import
 
-import { bindable, inject, InlineViewStrategy, bindingMode, NewInstance, Container, BindingEngine } from 'aurelia-framework';
+import { bindable, inject, InlineViewStrategy, bindingMode, NewInstance, Container, BindingEngine, Parent } from 'aurelia-framework';
 import { ValidationRules, ValidationController, validateTrigger } from 'aurelia-validation';
-import { Record } from '../../record';
+import { Record, RecordValidationState } from '../../record';
 import { Config } from '../../config';
 import { DataObjectFieldViewModel } from 'aurelia-editables';
+import {observable} from "aurelia-binding";
 
 //#endregion
 
-@inject(NewInstance.of(ValidationController), Element)
+@inject(NewInstance.of(ValidationController), Element, Config, BindingEngine)
 export class Field {
 
     //#region Bindables
@@ -34,6 +35,7 @@ export class Field {
     //#region Properties
 
     element: Element;
+    parent: Parent;
     viewStrategy: InlineViewStrategy;
     displayValue: any;
     inputType: string;
@@ -42,23 +44,23 @@ export class Field {
     validationMode = validateTrigger.change;
     controller: ValidationController;
     errors: Array<any>;
-    isValid = true;
+    isValid = false;
     pluginConfig: Config;
     init: number = 0;
+    validator: any;
 
     //#endregion
 
-    constructor(controller: ValidationController) {
+    constructor(controller: ValidationController, element: Element, config: Config, bindingEngine: BindingEngine) {
         this.controller = controller;
         this.controller.validateTrigger = validateTrigger.manual;
-        this.element = Container.instance.get(Element);
+        this.element = element;
         this.fieldModel = this;
-        this.pluginConfig = Container.instance.get(Config);
+        this.pluginConfig = config;
 
-        let locator = Container.instance.get(BindingEngine);
-        locator
-            .propertyObserver(this, 'isValid')
-            .subscribe(this.isValidChanged.bind(this));
+        //bindingEngine
+        //    .propertyObserver(this, 'isValid')
+        //    .subscribe(this.isValidChanged.bind(this));
 
         this.dispatch('on-created', { viewModel: this });
     }
@@ -82,6 +84,12 @@ export class Field {
         this.dispatch('on-bind', { viewModel: this });
     }
 
+    editModeChanged() {
+        if (this.editMode === true) {
+            setTimeout(() => this.validate(), 100);
+        }
+    }
+
     //#endregion
 
     //#region Validation
@@ -91,54 +99,53 @@ export class Field {
             if (this.options.validationMode)
                 this.validationMode = this.options.validationMode;
 
-            let validationRules = ValidationRules.ensure('fieldValue'),
-                props = Object.getOwnPropertyNames(this.options.validation);
-            for (let key of props) {
-                let ruleConfig = this.options.validation[key],
-                    ruleName = key,
-                    rule;
+            // this.options could be a deep-observed object,
+            // which has an '__observers__' own property that should be skipped
+            let props = Object
+                .getOwnPropertyNames(this.options.validation)
+                .filter(prop => prop !== '__observers__');
 
-                switch (key) {
-                    case 'required':
-                        ruleName = 'presence';
-                        break;
+            if (props.length > 0) {
+                let validator: any = ValidationRules;
+
+                for (let key of props) {
+                    let ruleConfig = this.options.validation[key],
+                        ruleName = key;
+
+                    validator = validator
+                        .ensure('fieldValue')
+                        .displayName(this.options.title || this.options.name)
+                        .satisfiesRule(ruleName,...ruleConfig)
+                        .on(this);
                 }
 
-                //rule = new Rules.set()<string, string>(ruleName, ruleConfig);
-                //validationRules.addRule('fieldValue', rule);
+                this.validator = validator;
             }
-
-            //validationRules.on(this);
         }
     }
 
     validate() {
-        if (this.integratedMode !== true) {
-            this.init++;
-            if (this.init <= 1)
-                return;
-        }
-
         this.dispatch('on-before-validate', { viewModel: this });
 
         this.controller.validate().then(errors => {
             this.errors = errors;
             this.isValid = this.errors.length === 0;
 
+            if (this.record && this.record.setValidationStatus) {
+
+                this.record.setValidationStatus(this.options.name,
+                    (this.isValid === true ? RecordValidationState.valid : RecordValidationState.invalid));
+                this.record.validate();
+            }
+
             this.dispatch('on-after-validate', { viewModel: this });
-            //console.log(this.options.name, this.controller.validate(), this.isValid);
         });
     }
 
-    isValidChanged(newValue) {
-        if (this.dataObject) {
-            this.dataObject.au.controller.viewModel.setValidationStatus(this.options.name, newValue);
-        }
-    }
-
     fieldValueChanged() {
-        if (this.validationMode === validateTrigger.change)
+        if (this.editMode === true) {
             this.validate();
+        }
 
         this.setDisplayValue();
 
@@ -146,19 +153,13 @@ export class Field {
     }
 
     blur() {
-        if (this.validationMode === validateTrigger.blur || this.integratedMode === true)
-            this.validate();
-
+        this.validate();
         this.dispatch('on-blur', { viewModel: this });
     }
 
     //#endregion
 
     //#region Methods
-
-    setEditMode() {
-        this.editMode = !this.editMode;
-    }
 
     setDisplayValue() {
         this.displayValue = this.fieldValue;
@@ -179,13 +180,15 @@ export class Field {
             this.editorType = this.options.editor.type;
         }
 
+        // default display templates for different field types
         switch (this.editorType) {
             case 'icon':
-                this.options.template = '<i class.bind="fieldValue"></i>';
+                this.options.template = this.options.template || '<i class.bind="fieldValue"></i>';
                 this.editorType = 'text';
                 break;
             case 'boolean':
-                this.options.template = '<input if.bind="fieldValue === true" type="checkbox" checked.bind="fieldValue" disabled />';
+                this.options.template = this.options.template ||
+                    '<input if.bind="fieldValue === true" type="checkbox" checked.bind="fieldValue" disabled />';
                 break;
             case 'number':
                 this.editorType = 'text';
