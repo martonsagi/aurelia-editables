@@ -45,7 +45,7 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
         RecordManager.prototype.current = function current(item) {
             this.currentRecord = item;
             if (this.currentRecord.editMode === true) {
-                this.currentRecord.setValidationFields(this.validationFields);
+                this.currentRecord.setValidationFields(this.validationFields).then(function () {});
             }
         };
 
@@ -72,45 +72,50 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
         };
 
         RecordManager.prototype.add = function add() {
+            var _this = this;
+
             var templateData = JSON.parse(JSON.stringify(this._template));
             var newRow = new _record.Record(templateData, _record.RecordState.added);
             newRow.setRecordManager(this);
-            if (this.validationFields && this.validationFields.length > 0) {
-                newRow.setValidationFields(this.validationFields);
-            }
-            this.isValid = false;
-            this.records.unshift(newRow);
-            this.current(this.records[0]);
-            for (var _iterator2 = this.queryModel.filters, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-                var _ref2;
+            return newRow.setValidationFields(this.validationFields).then(function () {
+                _this.isValid = false;
+                _this.records.unshift(newRow);
+                _this.current(_this.records[0]);
+                for (var _iterator2 = _this.queryModel.filters, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+                    var _ref2;
 
-                if (_isArray2) {
-                    if (_i2 >= _iterator2.length) break;
-                    _ref2 = _iterator2[_i2++];
-                } else {
-                    _i2 = _iterator2.next();
-                    if (_i2.done) break;
-                    _ref2 = _i2.value;
+                    if (_isArray2) {
+                        if (_i2 >= _iterator2.length) break;
+                        _ref2 = _iterator2[_i2++];
+                    } else {
+                        _i2 = _iterator2.next();
+                        if (_i2.done) break;
+                        _ref2 = _i2.value;
+                    }
+
+                    var filter = _ref2;
+
+                    _this.currentRecord[filter.field] = filter.value;
                 }
-
-                var filter = _ref2;
-
-                this.currentRecord[filter.field] = filter.value;
-            }
-            this.validate();
+                _this.validate();
+            });
         };
 
         RecordManager.prototype.edit = function edit(toggle) {
-            if (toggle === true) {
-                if (this.currentRecord) {
-                    this.currentRecord.setValidationFields(this.validationFields);
-                    this.currentRecord.editMode = true;
-                    this.currentRecord.validate();
-                }
-            } else {
-                if (this.currentRecord) {
-                    this.currentRecord.editMode = false;
-                }
+            var _this2 = this;
+
+            if (this.currentRecord) {
+                this.currentRecord.editMode = toggle;
+                return new Promise(function (resolve, reject) {
+                    if (toggle === true) {
+                        _this2.currentRecord.setValidationFields(_this2.validationFields).then(function () {
+                            _this2.currentRecord.validate();
+                            resolve();
+                        });
+                    } else {
+                        resolve();
+                    }
+                });
             }
         };
 
@@ -119,6 +124,7 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
             if (item.state !== _record.RecordState.added) {
                 this.records[i].state = _record.RecordState.deleted;
             } else {
+                item.dispose();
                 this.records.splice(i, 1);
             }
             this.validate();
@@ -141,8 +147,9 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
 
                     var row = _ref3;
 
-                    var i = this.records.indexOf(row);
-                    this.records.splice(i, 1);
+                    var index = this.records.indexOf(row);
+                    this.records[index].dispose();
+                    this.records.splice(index, 1);
                 }
             }
             for (var _iterator4 = this.records, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
@@ -227,6 +234,7 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
                     var row = _ref7;
 
                     var index = this.records.indexOf(row);
+                    this.records[index].dispose();
                     this.records.splice(index, 1);
                 }
             }
@@ -248,7 +256,9 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
                     var _row3 = _ref8;
 
                     var _index = this.records.indexOf(_row3);
+                    this.records[_index].dispose();
                     var originalRecord = new _record.Record(originalRows[_index]);
+                    originalRecord.setRecordManager(this);
                     this.records.splice(_index, 1, originalRecord);
                 }
             }
@@ -298,6 +308,30 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
                 return (item.state === _record.RecordState.added || item.state === _record.RecordState.modified) && item.isValid === false;
             });
             this.isValid = rows.length === 0;
+        };
+
+        RecordManager.prototype.dispose = function dispose() {
+            if (this.records.length > 0) {
+                for (var _iterator9 = this.records, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
+                    var _ref9;
+
+                    if (_isArray9) {
+                        if (_i9 >= _iterator9.length) break;
+                        _ref9 = _iterator9[_i9++];
+                    } else {
+                        _i9 = _iterator9.next();
+                        if (_i9.done) break;
+                        _ref9 = _i9.value;
+                    }
+
+                    var record = _ref9;
+
+                    record.dispose();
+                }
+            }
+            if (this.currentRecord instanceof _record.Record) {
+                this.currentRecord.dispose();
+            }
         };
 
         return RecordManager;

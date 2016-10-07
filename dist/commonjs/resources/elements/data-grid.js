@@ -46,7 +46,6 @@ var DataGrid = exports.DataGrid = function () {
         this.canLoad = false;
         this.showToolbar = true;
         this.filterVisible = false;
-        this.recordManager = new _recordManager.RecordManager();
         this.queryModel = { filters: [] };
         this.columnFilters = null;
         this.sortSettings = null;
@@ -64,6 +63,8 @@ var DataGrid = exports.DataGrid = function () {
 
     DataGrid.prototype.bind = function bind(bindingContext) {
         this.dispatch('on-bind', { viewModel: this, context: bindingContext });
+        this.recordManager = new _recordManager.RecordManager();
+        this.recordManager.load([{}]);
     };
 
     DataGrid.prototype.attached = function attached() {
@@ -77,6 +78,7 @@ var DataGrid = exports.DataGrid = function () {
     DataGrid.prototype.unbind = function unbind() {
         this.editMode = false;
         this.deepObserverDisposer();
+        this.recordManagerDisposer();
     };
 
     DataGrid.prototype.init = function init(canLoad) {
@@ -126,6 +128,7 @@ var DataGrid = exports.DataGrid = function () {
                 t.columnFilters[childOptions.childFieldName] = _this2.parentRecord[childOptions.parentFieldName];
             }
             t.total = result.total;
+            t.recordManagerDisposer();
             t.loadValidationFields();
             t.recordManager = new _recordManager.RecordManager(t.entity);
             t.recordManager.queryModel = t.queryModel;
@@ -204,6 +207,12 @@ var DataGrid = exports.DataGrid = function () {
             return col.name;
         });
         this.validationFields = fields;
+    };
+
+    DataGrid.prototype.recordManagerDisposer = function recordManagerDisposer() {
+        if (this.recordManager.records && this.recordManager.records.length > 0) {
+            this.recordManager.dispose();
+        }
     };
 
     DataGrid.prototype.refresh = function refresh() {
@@ -315,21 +324,27 @@ var DataGrid = exports.DataGrid = function () {
     };
 
     DataGrid.prototype.add = function add() {
-        this.recordManager.add();
+        var _this4 = this;
+
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
-        this.select(this.recordManager.currentRecord);
-        this.dispatch('on-record-add', { viewModel: this });
+        this.recordManager.add().then(function () {
+            _this4.select(_this4.recordManager.currentRecord);
+            _this4.dispatch('on-record-add', { viewModel: _this4 });
+        });
     };
 
     DataGrid.prototype.edit = function edit() {
+        var _this5 = this;
+
         this.editMode = !this.editMode;
-        this.recordManager.edit(this.editMode);
-        if (this.editMode === true) {
-            this.dispatch('on-record-edit-begin', { viewModel: this });
-        } else {
-            this.dispatch('on-record-edit-end', { viewModel: this });
-        }
+        this.recordManager.edit(this.editMode).then(function () {
+            if (_this5.editMode === true) {
+                _this5.dispatch('on-record-edit-begin', { viewModel: _this5 });
+            } else {
+                _this5.dispatch('on-record-edit-end', { viewModel: _this5 });
+            }
+        });
     };
 
     DataGrid.prototype.editForm = function editForm(rec) {
@@ -350,7 +365,7 @@ var DataGrid = exports.DataGrid = function () {
     };
 
     DataGrid.prototype.save = function save() {
-        var _this4 = this;
+        var _this6 = this;
 
         var t = this,
             changes = t.getChanges();
@@ -381,13 +396,13 @@ var DataGrid = exports.DataGrid = function () {
                 t.total += changes.added.length;
             }
             if (changes.deleted.length > 0 || changes.added.length > 0) {
-                _this4.pager.au.controller.viewModel.update();
+                _this6.pager.au.controller.viewModel.update();
             }
-            if (_this4.recordManager.currentRecord) {
-                _this4.recordManager.currentRecord.editMode = false;
+            if (_this6.recordManager.currentRecord) {
+                _this6.recordManager.currentRecord.editMode = false;
             }
-            _this4.editMode = false;
-            _this4.dispatch('on-after-save', { viewModel: _this4 });
+            _this6.editMode = false;
+            _this6.dispatch('on-after-save', { viewModel: _this6 });
         });
     };
 

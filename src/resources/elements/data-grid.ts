@@ -35,7 +35,7 @@ export class DataGrid {
 
     //#region Properties
 
-    recordManager: RecordManager | null = new RecordManager();
+    recordManager: RecordManager | null;
     element: Element;
     loader: HTMLElement;
     tableBody: HTMLElement;
@@ -86,6 +86,11 @@ export class DataGrid {
 
     bind(bindingContext) {
         this.dispatch('on-bind', { viewModel: this, context: bindingContext});
+        this.recordManager = new RecordManager();
+
+        // For now, an initial empty row is needed as a workaround to use ui-virtualization plugin
+        // see: https://github.com/aurelia/ui-virtualization/issues/83
+        this.recordManager.load([{}]);
     }
 
     attached() {
@@ -96,12 +101,12 @@ export class DataGrid {
     }
 
     detached() {
-
     }
 
     unbind() {
         this.editMode = false;
         this.deepObserverDisposer();
+        this.recordManagerDisposer();
     }
 
     //#endregion
@@ -167,8 +172,9 @@ export class DataGrid {
 
                 t.total = result.total;
 
-                t.loadValidationFields();
+                t.recordManagerDisposer();
 
+                t.loadValidationFields();
                 t.recordManager = new RecordManager(t.entity);
                 t.recordManager.queryModel = t.queryModel;
                 t.recordManager.setValidationFields(t.validationFields);
@@ -236,6 +242,12 @@ export class DataGrid {
             .map(col => col.name);
 
         this.validationFields = fields;
+    }
+
+    recordManagerDisposer() {
+        if (this.recordManager.records && this.recordManager.records.length > 0) {
+            this.recordManager.dispose();
+        }
     }
 
     refresh() {
@@ -371,24 +383,29 @@ export class DataGrid {
     //#region Editing features
 
     add() {
-        this.recordManager.add();
-
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
 
-        this.select(this.recordManager.currentRecord);
-        this.dispatch('on-record-add', { viewModel: this });
+        this.recordManager
+            .add()
+            .then(() => {
+                this.select(this.recordManager.currentRecord);
+                this.dispatch('on-record-add', {viewModel: this});
+            });
     }
 
     edit() {
         this.editMode = !this.editMode;
-        this.recordManager.edit(this.editMode);
 
-        if (this.editMode === true) {
-            this.dispatch('on-record-edit-begin', {viewModel: this});
-        } else {
-            this.dispatch('on-record-edit-end', {viewModel: this});
-        }
+        this.recordManager
+            .edit(this.editMode)
+            .then(() => {
+                if (this.editMode === true) {
+                    this.dispatch('on-record-edit-begin', {viewModel: this});
+                } else {
+                    this.dispatch('on-record-edit-end', {viewModel: this});
+                }
+            });
     }
 
     editForm(rec) {

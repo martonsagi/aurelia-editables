@@ -27,7 +27,8 @@
         "animate.css": "^3.5.2",
         "aurelia-http-client": "^1.0.0",
         "aurelia-i18n": "^1.1.2",
-        "aurelia-validation": "^0.12.5",
+        "aurelia-validation": "^0.13.1",
+        "aurelia-ui-virtualization": "^1.0.0-beta.3.0.1",
         "i18next-xhr-backend": "^1.2.0"
     },
     "devDependencies": {
@@ -91,13 +92,14 @@
         },
         "peerDependencies": {},
         "devDependencies": {
-            "aurelia-polyfills": "^1.0.0-beta.1.1.0",
+            "aurelia-polyfills": "^1.0.0",
             "aurelia-framework": "^1.0.0",
             "aurelia-http-client": "^1.0.0",
             "aurelia-i18n": "^1.0.0",
             "aurelia-templating-binding": "^1.0.0",
             "aurelia-templating-resources": "^1.0.0",
-            "aurelia-validation": "^0.12.5",
+            "aurelia-validation": "^0.13.1",
+            "aurelia-ui-virtualization": "^1.0.0-beta.3.0.1",
             "interact.js": "^1.2.6"
         }
     }

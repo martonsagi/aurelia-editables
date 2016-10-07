@@ -1,8 +1,8 @@
 import { Record, RecordState } from './record';
-import { observable } from 'aurelia-framework';
+import { observable, Disposable } from 'aurelia-framework';
 import { QueryModel } from 'aurelia-editables';
 
-export class RecordManager {
+export class RecordManager implements Disposable {
 
     private _template: any;
 
@@ -26,7 +26,9 @@ export class RecordManager {
     current(item: Record) {
         this.currentRecord = item;
         if (this.currentRecord.editMode === true) {
-            this.currentRecord.setValidationFields(this.validationFields);
+            this.currentRecord
+                .setValidationFields(this.validationFields)
+                .then(() => {});
         }
     }
 
@@ -45,37 +47,41 @@ export class RecordManager {
 
         let newRow = new Record(templateData, RecordState.added);
         newRow.setRecordManager(this);
-        if (this.validationFields && this.validationFields.length > 0) {
-            newRow.setValidationFields(this.validationFields);
-        }
+        return newRow.setValidationFields(this.validationFields)
+            .then(() => {
 
-        //newRow.isValid = false;
-        this.isValid = false;
+                this.isValid = false;
 
-        this.records.unshift(newRow);
-        this.current(this.records[0]);
+                this.records.unshift(newRow);
+                this.current(this.records[0]);
 
-        for (let filter of this.queryModel.filters) {
-            this.currentRecord[filter.field] = filter.value;
-        }
+                for (let filter of this.queryModel.filters) {
+                    this.currentRecord[filter.field] = filter.value;
+                }
 
-        this.validate();
+                this.validate();
+            });
     }
 
     edit(toggle) {
-        if (toggle === true) {
-            if (this.currentRecord) {
-                // loaded records have no validation by default to enhance performance
-                // initialize record validation when it goes into edit mode
-                this.currentRecord.setValidationFields(this.validationFields);
+        if (this.currentRecord) {
+            this.currentRecord.editMode = toggle;
 
-                this.currentRecord.editMode = true;
-                this.currentRecord.validate();
-            }
-        } else {
-            if (this.currentRecord) {
-                this.currentRecord.editMode = false;
-            }
+            return new Promise((resolve, reject) => {
+                if (toggle === true) {
+                    // loaded records have no validation by default to enhance performance
+                    // initialize record validation when it goes into edit mode
+                    this.currentRecord
+                        .setValidationFields(this.validationFields)
+                        .then(() => {
+                            this.currentRecord.validate();
+                            resolve();
+                        });
+
+                } else {
+                    resolve();
+                }
+            });
         }
     }
 
@@ -85,6 +91,7 @@ export class RecordManager {
         if (item.state !== RecordState.added) {
             this.records[i].state = RecordState.deleted;
         } else {
+            item.dispose();
             this.records.splice(i, 1);
         }
 
@@ -95,8 +102,9 @@ export class RecordManager {
         let changes = changesOverride || this.getChanges();
         if (changes.deleted.length > 0) {
             for (let row of changes.deleted) {
-                let i = this.records.indexOf(row);
-                this.records.splice(i, 1);
+                let index = this.records.indexOf(row);
+                this.records[index].dispose();
+                this.records.splice(index, 1);
             }
         }
 
@@ -137,6 +145,7 @@ export class RecordManager {
         if (changes.added.length > 0) {
             for (let row of changes.added) {
                 let index = this.records.indexOf(row);
+                this.records[index].dispose();
                 this.records.splice(index, 1);
             }
         }
@@ -150,7 +159,11 @@ export class RecordManager {
 
             for (let row of rows) {
                 let index = this.records.indexOf(row);
+                this.records[index].dispose();
+
                 let originalRecord = new Record(originalRows[index]);
+                originalRecord.setRecordManager(this);
+
                 this.records.splice(index, 1, originalRecord);
             }
         }
@@ -209,5 +222,17 @@ export class RecordManager {
         );
 
         this.isValid = rows.length === 0;
+    }
+
+    dispose(): void {
+        if (this.records.length > 0) {
+            for (let record of this.records) {
+                record.dispose();
+            }
+        }
+
+        if (this.currentRecord instanceof Record) {
+            this.currentRecord.dispose();
+        }
     }
 }

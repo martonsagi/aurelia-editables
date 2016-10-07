@@ -1,5 +1,6 @@
 /**
- * Created by Jason on 29/02/2016.
+ * Created by Jason Sobell on 29/02/2016.
+ * Gist Source: https://gist.github.com/jsobell/6240c0ba3da55214b5bb
  *
  * constructor(public deepobserver:DeepObserver) {
  *   this.obsDisposer = this.deepobserver.observe(this, 'target', (n,o,p)=>

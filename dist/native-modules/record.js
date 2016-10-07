@@ -23,50 +23,12 @@ export var Record = function () {
         this.validationFields = [];
         this.isValid = false;
         this.isValidationActivated = false;
+        this.subscriptions = [];
+        this._data = data;
         this.init = false;
-        data.state = state || RecordState.unchanged;
-        var props = Object.getOwnPropertyNames(data);
-        for (var _iterator = props, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-            var _ref;
-
-            if (_isArray) {
-                if (_i >= _iterator.length) break;
-                _ref = _iterator[_i++];
-            } else {
-                _i = _iterator.next();
-                if (_i.done) break;
-                _ref = _i.value;
-            }
-
-            var prop = _ref;
-
-            this[prop] = data[prop];
-        }
+        this.state = state || RecordState.unchanged;
+        Object.assign(this, this._data);
         this.bindingEngine = Container.instance.get(BindingEngine);
-        for (var _iterator2 = props, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-            var _ref2;
-
-            if (_isArray2) {
-                if (_i2 >= _iterator2.length) break;
-                _ref2 = _iterator2[_i2++];
-            } else {
-                _i2 = _iterator2.next();
-                if (_i2.done) break;
-                _ref2 = _i2.value;
-            }
-
-            var _prop = _ref2;
-
-            switch (_prop) {
-                default:
-                    this.bindingEngine.propertyObserver(this, _prop).subscribe(this.onChange.bind(this));
-                    break;
-                case 'state':
-                case 'editMode':
-                    this.bindingEngine.propertyObserver(this, _prop).subscribe(this.onStateChange.bind(this));
-                    break;
-            }
-        }
         this.init = true;
     }
 
@@ -75,26 +37,55 @@ export var Record = function () {
     };
 
     Record.prototype.setValidationFields = function setValidationFields(fieldNames) {
-        if (this.isValidationActivated === true) return;
-        this.validationFields = fieldNames;
-        for (var _iterator3 = fieldNames, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-            var _ref3;
+        var _this = this;
 
-            if (_isArray3) {
-                if (_i3 >= _iterator3.length) break;
-                _ref3 = _iterator3[_i3++];
-            } else {
-                _i3 = _iterator3.next();
-                if (_i3.done) break;
-                _ref3 = _i3.value;
+        return new Promise(function (resolve, reject) {
+            if (_this.isValidationActivated === true) return;
+            _this.validationFields = fieldNames;
+            for (var _iterator = fieldNames, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                var _ref;
+
+                if (_isArray) {
+                    if (_i >= _iterator.length) break;
+                    _ref = _iterator[_i++];
+                } else {
+                    _i = _iterator.next();
+                    if (_i.done) break;
+                    _ref = _i.value;
+                }
+
+                var name = _ref;
+
+                _this.validationStatus[name] = RecordValidationState.invalid;
+                _this.subscriptions.push(_this.bindingEngine.propertyObserver(_this.validationStatus, name).subscribe(_this.onValidationFieldsChange.bind(_this)));
             }
+            var props = Object.getOwnPropertyNames(_this._data);
+            for (var _iterator2 = props, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+                var _ref2;
 
-            var name = _ref3;
+                if (_isArray2) {
+                    if (_i2 >= _iterator2.length) break;
+                    _ref2 = _iterator2[_i2++];
+                } else {
+                    _i2 = _iterator2.next();
+                    if (_i2.done) break;
+                    _ref2 = _i2.value;
+                }
 
-            this.validationStatus[name] = RecordValidationState.invalid;
-            this.bindingEngine.propertyObserver(this.validationStatus, name).subscribe(this.onValidationFieldsChange.bind(this));
-        }
-        this.isValidationActivated = true;
+                var prop = _ref2;
+
+                switch (prop) {
+                    default:
+                        _this.subscriptions.push(_this.bindingEngine.propertyObserver(_this, prop).subscribe(_this.onChange.bind(_this)));
+                        break;
+                    case "state":
+                    case "editMode":
+                        break;
+                }
+            }
+            _this.isValidationActivated = true;
+            resolve();
+        });
     };
 
     Record.prototype.onValidationFieldsChange = function onValidationFieldsChange(newValue, oldValue) {
@@ -106,28 +97,33 @@ export var Record = function () {
     };
 
     Record.prototype.validate = function validate() {
-        if (this.validationFields.length === 0) {
-            return;
-        }
-        this.isValid = true;
-        for (var _iterator4 = this.validationFields, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
-            var _ref4;
+        var _this2 = this;
 
-            if (_isArray4) {
-                if (_i4 >= _iterator4.length) break;
-                _ref4 = _iterator4[_i4++];
-            } else {
-                _i4 = _iterator4.next();
-                if (_i4.done) break;
-                _ref4 = _i4.value;
+        return new Promise(function (resolve, reject) {
+            if (_this2.validationFields.length === 0) {
+                resolve();
             }
+            _this2.isValid = true;
+            for (var _iterator3 = _this2.validationFields, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+                var _ref3;
 
-            var field = _ref4;
+                if (_isArray3) {
+                    if (_i3 >= _iterator3.length) break;
+                    _ref3 = _iterator3[_i3++];
+                } else {
+                    _i3 = _iterator3.next();
+                    if (_i3.done) break;
+                    _ref3 = _i3.value;
+                }
 
-            if (this.validationStatus[field] !== RecordValidationState.valid) {
-                this.isValid = false;
+                var field = _ref3;
+
+                if (_this2.validationStatus[field] !== RecordValidationState.valid) {
+                    _this2.isValid = false;
+                }
             }
-        }
+            resolve();
+        });
     };
 
     Record.prototype.onChange = function onChange() {
@@ -144,8 +140,31 @@ export var Record = function () {
 
     Record.prototype.onStateChange = function onStateChange() {};
 
+    Record.prototype.dispose = function dispose() {
+        if (this.subscriptions.length > 0) {
+            for (var _iterator4 = this.subscriptions, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+                var _ref4;
+
+                if (_isArray4) {
+                    if (_i4 >= _iterator4.length) break;
+                    _ref4 = _iterator4[_i4++];
+                } else {
+                    _i4 = _iterator4.next();
+                    if (_i4.done) break;
+                    _ref4 = _i4.value;
+                }
+
+                var sub = _ref4;
+
+                sub.dispose();
+            }
+        }
+    };
+
     return Record;
 }();
+__decorate([observable(), __metadata('design:type', String)], Record.prototype, "state", void 0);
+__decorate([observable(), __metadata('design:type', Boolean)], Record.prototype, "editMode", void 0);
 __decorate([observable(), __metadata('design:type', Object)], Record.prototype, "validationStatus", void 0);
 __decorate([observable(), __metadata('design:type', Boolean)], Record.prototype, "isValid", void 0);
 export var RecordState = {

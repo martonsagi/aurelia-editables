@@ -22,7 +22,7 @@ export let RecordManager = class RecordManager {
     current(item) {
         this.currentRecord = item;
         if (this.currentRecord.editMode === true) {
-            this.currentRecord.setValidationFields(this.validationFields);
+            this.currentRecord.setValidationFields(this.validationFields).then(() => {});
         }
     }
     load(data) {
@@ -37,28 +37,29 @@ export let RecordManager = class RecordManager {
         let templateData = JSON.parse(JSON.stringify(this._template));
         let newRow = new Record(templateData, RecordState.added);
         newRow.setRecordManager(this);
-        if (this.validationFields && this.validationFields.length > 0) {
-            newRow.setValidationFields(this.validationFields);
-        }
-        this.isValid = false;
-        this.records.unshift(newRow);
-        this.current(this.records[0]);
-        for (let filter of this.queryModel.filters) {
-            this.currentRecord[filter.field] = filter.value;
-        }
-        this.validate();
+        return newRow.setValidationFields(this.validationFields).then(() => {
+            this.isValid = false;
+            this.records.unshift(newRow);
+            this.current(this.records[0]);
+            for (let filter of this.queryModel.filters) {
+                this.currentRecord[filter.field] = filter.value;
+            }
+            this.validate();
+        });
     }
     edit(toggle) {
-        if (toggle === true) {
-            if (this.currentRecord) {
-                this.currentRecord.setValidationFields(this.validationFields);
-                this.currentRecord.editMode = true;
-                this.currentRecord.validate();
-            }
-        } else {
-            if (this.currentRecord) {
-                this.currentRecord.editMode = false;
-            }
+        if (this.currentRecord) {
+            this.currentRecord.editMode = toggle;
+            return new Promise((resolve, reject) => {
+                if (toggle === true) {
+                    this.currentRecord.setValidationFields(this.validationFields).then(() => {
+                        this.currentRecord.validate();
+                        resolve();
+                    });
+                } else {
+                    resolve();
+                }
+            });
         }
     }
     remove(item) {
@@ -66,6 +67,7 @@ export let RecordManager = class RecordManager {
         if (item.state !== RecordState.added) {
             this.records[i].state = RecordState.deleted;
         } else {
+            item.dispose();
             this.records.splice(i, 1);
         }
         this.validate();
@@ -74,8 +76,9 @@ export let RecordManager = class RecordManager {
         let changes = changesOverride || this.getChanges();
         if (changes.deleted.length > 0) {
             for (let row of changes.deleted) {
-                let i = this.records.indexOf(row);
-                this.records.splice(i, 1);
+                let index = this.records.indexOf(row);
+                this.records[index].dispose();
+                this.records.splice(index, 1);
             }
         }
         for (let row of this.records) {
@@ -106,6 +109,7 @@ export let RecordManager = class RecordManager {
         if (changes.added.length > 0) {
             for (let row of changes.added) {
                 let index = this.records.indexOf(row);
+                this.records[index].dispose();
                 this.records.splice(index, 1);
             }
         }
@@ -114,7 +118,9 @@ export let RecordManager = class RecordManager {
             let originalRows = JSON.parse(JSON.stringify(this.originalRecords));
             for (let row of rows) {
                 let index = this.records.indexOf(row);
+                this.records[index].dispose();
                 let originalRecord = new Record(originalRows[index]);
+                originalRecord.setRecordManager(this);
                 this.records.splice(index, 1, originalRecord);
             }
         }
@@ -157,6 +163,16 @@ export let RecordManager = class RecordManager {
         }
         let rows = this.records.filter(item => (item.state === RecordState.added || item.state === RecordState.modified) && item.isValid === false);
         this.isValid = rows.length === 0;
+    }
+    dispose() {
+        if (this.records.length > 0) {
+            for (let record of this.records) {
+                record.dispose();
+            }
+        }
+        if (this.currentRecord instanceof Record) {
+            this.currentRecord.dispose();
+        }
     }
 };
 __decorate([observable, __metadata('design:type', Object)], RecordManager.prototype, "currentRecord", void 0);

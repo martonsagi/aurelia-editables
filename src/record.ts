@@ -1,17 +1,23 @@
 ﻿//#region import
 
-import { Container, BindingEngine, observable } from 'aurelia-framework';
+import { Container, BindingEngine, observable, Disposable } from 'aurelia-framework';
 import { RecordStateOptions, RecordValidationStateOptions } from 'aurelia-editables';
 import { RecordManager } from './record-manager';
 
 //#endregion
 
-export class Record {
+export class Record implements Disposable {
 
     //#region Properties
 
+    private _data: any;
+
     init: boolean;
+
+    @observable()
     state: string;
+
+    @observable()
     editMode: boolean = false;
 
     @observable()
@@ -25,34 +31,18 @@ export class Record {
     bindingEngine: BindingEngine;
     recordManager: RecordManager;
 
+    subscriptions: Array<Disposable> = [];
+
     //#endregion
 
     constructor(data: any, state?: string) {
+        this._data = data;
         this.init = false;
-        data.state = state || RecordState.unchanged;
+        this.state = state || RecordState.unchanged;
 
-        let props: Array<string> = Object.getOwnPropertyNames(data);
-        for (let prop of props) {
-            this[prop] = data[prop];
-        }
+        Object.assign(this, this._data);
 
         this.bindingEngine = Container.instance.get(BindingEngine);
-
-        for (let prop of props) {
-            switch (prop) {
-                default:
-                    this.bindingEngine
-                        .propertyObserver(this, prop)
-                        .subscribe(this.onChange.bind(this));
-                break;
-                case 'state':
-                case 'editMode':
-                    this.bindingEngine
-                        .propertyObserver(this, prop)
-                        .subscribe(this.onStateChange.bind(this));
-                    break;
-            }
-        }
 
         this.init = true;
     }
@@ -61,20 +51,50 @@ export class Record {
         this.recordManager = manager;
     }
 
+    /**
+     *
+     * This function initializes property observation and validation features
+     *
+     * Performance consideration:
+     * It will only be triggered one time when a record becomes a subject of add/edit operation
+     *
+     * @param fieldNames Array<string> property names which have validation
+     */
     setValidationFields(fieldNames: Array<string>) {
-        if (this.isValidationActivated === true)
-            return;
+        return new Promise((resolve, reject) => {
+            if (this.isValidationActivated === true)
+                return;
 
-        this.validationFields = fieldNames;
-        for (let name of fieldNames) {
-            this.validationStatus[name] = RecordValidationState.invalid;
+            this.validationFields = fieldNames;
+            for (let name of fieldNames) {
+                this.validationStatus[name] = RecordValidationState.invalid;
 
-            this.bindingEngine
-                .propertyObserver(this.validationStatus, name)
-                .subscribe(this.onValidationFieldsChange.bind(this));
-        }
+                this.subscriptions.push(
+                    this.bindingEngine
+                        .propertyObserver(this.validationStatus, name)
+                        .subscribe(this.onValidationFieldsChange.bind(this))
+                );
+            }
 
-        this.isValidationActivated = true;
+            let props: Array<string> = Object.getOwnPropertyNames(this._data);
+            for (let prop of props) {
+                switch (prop) {
+                    default:
+                        this.subscriptions.push(
+                            this.bindingEngine
+                                .propertyObserver(this, prop)
+                                .subscribe(this.onChange.bind(this))
+                        );
+                        break;
+                    case "state":
+                    case "editMode":
+                        break;
+                }
+            }
+
+            this.isValidationActivated = true;
+            resolve();
+        });
     }
 
     onValidationFieldsChange(newValue, oldValue) {
@@ -86,17 +106,21 @@ export class Record {
     }
 
     validate() {
-        if (this.validationFields.length === 0) {
-            return;
-        }
-
-        this.isValid = true;
-
-        for (let field of this.validationFields) {
-            if (this.validationStatus[field] !== RecordValidationState.valid) {
-                this.isValid = false;
+        return new Promise((resolve, reject) => {
+            if (this.validationFields.length === 0) {
+                resolve();
             }
-        }
+
+            this.isValid = true;
+
+            for (let field of this.validationFields) {
+                if (this.validationStatus[field] !== RecordValidationState.valid) {
+                    this.isValid = false;
+                }
+            }
+
+            resolve();
+        });
     }
 
     //#region Events
@@ -114,6 +138,14 @@ export class Record {
     }
 
     onStateChange() {
+    }
+
+    dispose(): void {
+        if (this.subscriptions.length > 0) {
+            for (let sub of this.subscriptions) {
+                sub.dispose();
+            }
+        }
     }
 
     //#endregion

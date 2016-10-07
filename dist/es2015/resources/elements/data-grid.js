@@ -24,7 +24,6 @@ export let DataGrid = class DataGrid {
         this.canLoad = false;
         this.showToolbar = true;
         this.filterVisible = false;
-        this.recordManager = new RecordManager();
         this.queryModel = { filters: [] };
         this.columnFilters = null;
         this.sortSettings = null;
@@ -43,6 +42,8 @@ export let DataGrid = class DataGrid {
     created() {}
     bind(bindingContext) {
         this.dispatch('on-bind', { viewModel: this, context: bindingContext });
+        this.recordManager = new RecordManager();
+        this.recordManager.load([{}]);
     }
     attached() {
         this.dispatch('on-attached', { viewModel: this });
@@ -53,6 +54,7 @@ export let DataGrid = class DataGrid {
     unbind() {
         this.editMode = false;
         this.deepObserverDisposer();
+        this.recordManagerDisposer();
     }
     init(canLoad) {
         this.dispatch('on-init', { viewModel: this });
@@ -96,6 +98,7 @@ export let DataGrid = class DataGrid {
                 t.columnFilters[childOptions.childFieldName] = this.parentRecord[childOptions.parentFieldName];
             }
             t.total = result.total;
+            t.recordManagerDisposer();
             t.loadValidationFields();
             t.recordManager = new RecordManager(t.entity);
             t.recordManager.queryModel = t.queryModel;
@@ -145,6 +148,11 @@ export let DataGrid = class DataGrid {
     loadValidationFields() {
         let fields = this.options.columns.filter(col => col.validation).map(col => col.name);
         this.validationFields = fields;
+    }
+    recordManagerDisposer() {
+        if (this.recordManager.records && this.recordManager.records.length > 0) {
+            this.recordManager.dispose();
+        }
     }
     refresh() {
         this.dispatch('on-refresh', { viewModel: this });
@@ -234,20 +242,22 @@ export let DataGrid = class DataGrid {
         return true;
     }
     add() {
-        this.recordManager.add();
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
-        this.select(this.recordManager.currentRecord);
-        this.dispatch('on-record-add', { viewModel: this });
+        this.recordManager.add().then(() => {
+            this.select(this.recordManager.currentRecord);
+            this.dispatch('on-record-add', { viewModel: this });
+        });
     }
     edit() {
         this.editMode = !this.editMode;
-        this.recordManager.edit(this.editMode);
-        if (this.editMode === true) {
-            this.dispatch('on-record-edit-begin', { viewModel: this });
-        } else {
-            this.dispatch('on-record-edit-end', { viewModel: this });
-        }
+        this.recordManager.edit(this.editMode).then(() => {
+            if (this.editMode === true) {
+                this.dispatch('on-record-edit-begin', { viewModel: this });
+            } else {
+                this.dispatch('on-record-edit-end', { viewModel: this });
+            }
+        });
     }
     editForm(rec) {
         this.formMode = true;

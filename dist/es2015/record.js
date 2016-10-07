@@ -16,37 +16,39 @@ export let Record = class Record {
         this.validationFields = [];
         this.isValid = false;
         this.isValidationActivated = false;
+        this.subscriptions = [];
+        this._data = data;
         this.init = false;
-        data.state = state || RecordState.unchanged;
-        let props = Object.getOwnPropertyNames(data);
-        for (let prop of props) {
-            this[prop] = data[prop];
-        }
+        this.state = state || RecordState.unchanged;
+        Object.assign(this, this._data);
         this.bindingEngine = Container.instance.get(BindingEngine);
-        for (let prop of props) {
-            switch (prop) {
-                default:
-                    this.bindingEngine.propertyObserver(this, prop).subscribe(this.onChange.bind(this));
-                    break;
-                case 'state':
-                case 'editMode':
-                    this.bindingEngine.propertyObserver(this, prop).subscribe(this.onStateChange.bind(this));
-                    break;
-            }
-        }
         this.init = true;
     }
     setRecordManager(manager) {
         this.recordManager = manager;
     }
     setValidationFields(fieldNames) {
-        if (this.isValidationActivated === true) return;
-        this.validationFields = fieldNames;
-        for (let name of fieldNames) {
-            this.validationStatus[name] = RecordValidationState.invalid;
-            this.bindingEngine.propertyObserver(this.validationStatus, name).subscribe(this.onValidationFieldsChange.bind(this));
-        }
-        this.isValidationActivated = true;
+        return new Promise((resolve, reject) => {
+            if (this.isValidationActivated === true) return;
+            this.validationFields = fieldNames;
+            for (let name of fieldNames) {
+                this.validationStatus[name] = RecordValidationState.invalid;
+                this.subscriptions.push(this.bindingEngine.propertyObserver(this.validationStatus, name).subscribe(this.onValidationFieldsChange.bind(this)));
+            }
+            let props = Object.getOwnPropertyNames(this._data);
+            for (let prop of props) {
+                switch (prop) {
+                    default:
+                        this.subscriptions.push(this.bindingEngine.propertyObserver(this, prop).subscribe(this.onChange.bind(this)));
+                        break;
+                    case "state":
+                    case "editMode":
+                        break;
+                }
+            }
+            this.isValidationActivated = true;
+            resolve();
+        });
     }
     onValidationFieldsChange(newValue, oldValue) {
         this.validate();
@@ -55,15 +57,18 @@ export let Record = class Record {
         this.validationStatus[field] = state;
     }
     validate() {
-        if (this.validationFields.length === 0) {
-            return;
-        }
-        this.isValid = true;
-        for (let field of this.validationFields) {
-            if (this.validationStatus[field] !== RecordValidationState.valid) {
-                this.isValid = false;
+        return new Promise((resolve, reject) => {
+            if (this.validationFields.length === 0) {
+                resolve();
             }
-        }
+            this.isValid = true;
+            for (let field of this.validationFields) {
+                if (this.validationStatus[field] !== RecordValidationState.valid) {
+                    this.isValid = false;
+                }
+            }
+            resolve();
+        });
     }
     onChange() {
         if (this.init === true && this.state === RecordState.unchanged) {
@@ -76,7 +81,16 @@ export let Record = class Record {
         }
     }
     onStateChange() {}
+    dispose() {
+        if (this.subscriptions.length > 0) {
+            for (let sub of this.subscriptions) {
+                sub.dispose();
+            }
+        }
+    }
 };
+__decorate([observable(), __metadata('design:type', String)], Record.prototype, "state", void 0);
+__decorate([observable(), __metadata('design:type', Boolean)], Record.prototype, "editMode", void 0);
 __decorate([observable(), __metadata('design:type', Object)], Record.prototype, "validationStatus", void 0);
 __decorate([observable(), __metadata('design:type', Boolean)], Record.prototype, "isValid", void 0);
 export const RecordState = {
