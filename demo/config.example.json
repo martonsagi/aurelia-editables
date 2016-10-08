@@ -40,7 +40,7 @@
           "values": null,
           "type": "dropdown"
         },
-        "validation": {},
+        "validation": {"required": [], "minLength": [2]},
         "validationMode": null,
         "placeholder": null,
         "groupId": null,
@@ -64,7 +64,7 @@
           "values": null,
           "type": "text"
         },
-        "validation": {},
+        "validation": {"required": [], "maxLength": [25]},
         "validationMode": null,
         "placeholder": null,
         "groupId": null,
@@ -88,7 +88,7 @@
           "values": null,
           "type": "text"
         },
-        "validation": {},
+        "validation": {"required": [], "maxLength": [50]},
         "validationMode": null,
         "placeholder": null,
         "groupId": null,
