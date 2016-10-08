@@ -217,8 +217,25 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                 };
 
                 RecordManager.prototype.dirty = function dirty() {
-                    var changes = this.getChanges();
-                    return changes.dirty === true;
+                    for (var _iterator7 = this.records, _isArray7 = Array.isArray(_iterator7), _i7 = 0, _iterator7 = _isArray7 ? _iterator7 : _iterator7[Symbol.iterator]();;) {
+                        var _ref7;
+
+                        if (_isArray7) {
+                            if (_i7 >= _iterator7.length) break;
+                            _ref7 = _iterator7[_i7++];
+                        } else {
+                            _i7 = _iterator7.next();
+                            if (_i7.done) break;
+                            _ref7 = _i7.value;
+                        }
+
+                        var item = _ref7;
+
+                        if (item.state !== RecordState.unchanged) {
+                            return true;
+                        }
+                    }
+                    return false;
                 };
 
                 RecordManager.prototype.cancel = function cancel() {
@@ -227,29 +244,7 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                         return false;
                     }
                     if (changes.added.length > 0) {
-                        for (var _iterator7 = changes.added, _isArray7 = Array.isArray(_iterator7), _i7 = 0, _iterator7 = _isArray7 ? _iterator7 : _iterator7[Symbol.iterator]();;) {
-                            var _ref7;
-
-                            if (_isArray7) {
-                                if (_i7 >= _iterator7.length) break;
-                                _ref7 = _iterator7[_i7++];
-                            } else {
-                                _i7 = _iterator7.next();
-                                if (_i7.done) break;
-                                _ref7 = _i7.value;
-                            }
-
-                            var row = _ref7;
-
-                            var index = this.records.indexOf(row);
-                            this.records[index].dispose();
-                            this.records.splice(index, 1);
-                        }
-                    }
-                    if (changes.deleted.length > 0 || changes.modified.length > 0) {
-                        var rows = changes.modified.concat(changes.deleted);
-                        var originalRows = JSON.parse(JSON.stringify(this.originalRecords));
-                        for (var _iterator8 = rows, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
+                        for (var _iterator8 = changes.added, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
                             var _ref8;
 
                             if (_isArray8) {
@@ -261,7 +256,29 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                                 _ref8 = _i8.value;
                             }
 
-                            var _row3 = _ref8;
+                            var row = _ref8;
+
+                            var index = this.records.indexOf(row);
+                            this.records[index].dispose();
+                            this.records.splice(index, 1);
+                        }
+                    }
+                    if (changes.deleted.length > 0 || changes.modified.length > 0) {
+                        var rows = changes.modified.concat(changes.deleted);
+                        var originalRows = JSON.parse(JSON.stringify(this.originalRecords));
+                        for (var _iterator9 = rows, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
+                            var _ref9;
+
+                            if (_isArray9) {
+                                if (_i9 >= _iterator9.length) break;
+                                _ref9 = _iterator9[_i9++];
+                            } else {
+                                _i9 = _iterator9.next();
+                                if (_i9.done) break;
+                                _ref9 = _i9.value;
+                            }
+
+                            var _row3 = _ref9;
 
                             var _index = this.records.indexOf(_row3);
                             this.records[_index].dispose();
@@ -286,15 +303,33 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
                 };
 
                 RecordManager.prototype.getChanges = function getChanges() {
-                    var modified = this.records.filter(function (item) {
-                        return item.state === RecordState.modified;
-                    });
-                    var added = this.records.filter(function (item) {
-                        return item.state === RecordState.added;
-                    });
-                    var deleted = this.records.filter(function (item) {
-                        return item.state === RecordState.deleted;
-                    });
+                    var modified = [],
+                        added = [],
+                        deleted = [];
+                    for (var _iterator10 = this.records, _isArray10 = Array.isArray(_iterator10), _i10 = 0, _iterator10 = _isArray10 ? _iterator10 : _iterator10[Symbol.iterator]();;) {
+                        var _ref10;
+
+                        if (_isArray10) {
+                            if (_i10 >= _iterator10.length) break;
+                            _ref10 = _iterator10[_i10++];
+                        } else {
+                            _i10 = _iterator10.next();
+                            if (_i10.done) break;
+                            _ref10 = _i10.value;
+                        }
+
+                        var item = _ref10;
+
+                        if (item.state === RecordState.modified) {
+                            modified.push(item);
+                        }
+                        if (item.state === RecordState.added) {
+                            added.push(item);
+                        }
+                        if (item.state === RecordState.deleted) {
+                            deleted.push(item);
+                        }
+                    }
                     return {
                         added: added,
                         modified: modified,
@@ -320,19 +355,19 @@ System.register(["./record", "aurelia-framework"], function (_export, _context) 
 
                 RecordManager.prototype.dispose = function dispose() {
                     if (this.records.length > 0) {
-                        for (var _iterator9 = this.records, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
-                            var _ref9;
+                        for (var _iterator11 = this.records, _isArray11 = Array.isArray(_iterator11), _i11 = 0, _iterator11 = _isArray11 ? _iterator11 : _iterator11[Symbol.iterator]();;) {
+                            var _ref11;
 
-                            if (_isArray9) {
-                                if (_i9 >= _iterator9.length) break;
-                                _ref9 = _iterator9[_i9++];
+                            if (_isArray11) {
+                                if (_i11 >= _iterator11.length) break;
+                                _ref11 = _iterator11[_i11++];
                             } else {
-                                _i9 = _iterator9.next();
-                                if (_i9.done) break;
-                                _ref9 = _i9.value;
+                                _i11 = _iterator11.next();
+                                if (_i11.done) break;
+                                _ref11 = _i11.value;
                             }
 
-                            var record = _ref9;
+                            var record = _ref11;
 
                             record.dispose();
                         }

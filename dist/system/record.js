@@ -161,10 +161,17 @@ System.register(["aurelia-framework"], function (_export, _context) {
                     }
                 };
 
+                Record.prototype.editModeChanged = function editModeChanged() {
+                    if (this.editMode === false) {
+                        this.dispose();
+                        this.isValidationActivated = false;
+                    }
+                };
+
                 Record.prototype.onStateChange = function onStateChange() {};
 
                 Record.prototype.dispose = function dispose() {
-                    if (this.subscriptions.length > 0) {
+                    if (this.subscriptions && this.subscriptions.length > 0) {
                         for (var _iterator4 = this.subscriptions, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
                             var _ref4;
 
@@ -182,6 +189,7 @@ System.register(["aurelia-framework"], function (_export, _context) {
                             sub.dispose();
                         }
                     }
+                    this.subscriptions = [];
                 };
 
                 return Record;

@@ -98,8 +98,12 @@ export let RecordManager = class RecordManager {
         this.originalRecords = this.setOriginal(originalRows);
     }
     dirty() {
-        let changes = this.getChanges();
-        return changes.dirty === true;
+        for (let item of this.records) {
+            if (item.state !== RecordState.unchanged) {
+                return true;
+            }
+        }
+        return false;
     }
     cancel() {
         let changes = this.getChanges();
@@ -137,15 +141,20 @@ export let RecordManager = class RecordManager {
         return JSON.parse(JSON.stringify(this.originalRecords));
     }
     getChanges() {
-        let modified = this.records.filter(item => {
-            return item.state === RecordState.modified;
-        });
-        let added = this.records.filter(item => {
-            return item.state === RecordState.added;
-        });
-        let deleted = this.records.filter(item => {
-            return item.state === RecordState.deleted;
-        });
+        let modified = [],
+            added = [],
+            deleted = [];
+        for (let item of this.records) {
+            if (item.state === RecordState.modified) {
+                modified.push(item);
+            }
+            if (item.state === RecordState.added) {
+                added.push(item);
+            }
+            if (item.state === RecordState.deleted) {
+                deleted.push(item);
+            }
+        }
         return {
             added: added,
             modified: modified,

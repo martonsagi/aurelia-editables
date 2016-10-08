@@ -130,8 +130,13 @@ export class RecordManager implements Disposable {
     }
 
     dirty() {
-        let changes = this.getChanges();
-        return changes.dirty === true;
+        for (let item of this.records) {
+            if (item.state !== RecordState.unchanged) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     cancel() {
@@ -184,17 +189,23 @@ export class RecordManager implements Disposable {
     }
 
     getChanges() {
-        let modified = this.records.filter(item => {
-            return item.state === RecordState.modified;
-        });
+        let modified = [],
+            added = [],
+            deleted = [];
 
-        let added = this.records.filter(item => {
-            return item.state === RecordState.added;
-        });
+        for (let item of this.records) {
+            if (item.state === RecordState.modified) {
+                modified.push(item);
+            }
 
-        let deleted = this.records.filter(item => {
-            return item.state === RecordState.deleted;
-        });
+            if (item.state === RecordState.added) {
+                added.push(item);
+            }
+
+            if (item.state === RecordState.deleted) {
+                deleted.push(item);
+            }
+        }
 
         return {
             added: added,

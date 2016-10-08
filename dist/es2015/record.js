@@ -80,13 +80,20 @@ export let Record = class Record {
             this.recordManager.validate();
         }
     }
+    editModeChanged() {
+        if (this.editMode === false) {
+            this.dispose();
+            this.isValidationActivated = false;
+        }
+    }
     onStateChange() {}
     dispose() {
-        if (this.subscriptions.length > 0) {
+        if (this.subscriptions && this.subscriptions.length > 0) {
             for (let sub of this.subscriptions) {
                 sub.dispose();
             }
         }
+        this.subscriptions = [];
     }
 };
 __decorate([observable(), __metadata('design:type', String)], Record.prototype, "state", void 0);

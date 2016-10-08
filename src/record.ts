@@ -137,15 +137,24 @@ export class Record implements Disposable {
         }
     }
 
+    editModeChanged() {
+        if (this.editMode === false) {
+            this.dispose();
+            this.isValidationActivated = false;
+        }
+    }
+
     onStateChange() {
     }
 
     dispose(): void {
-        if (this.subscriptions.length > 0) {
+        if (this.subscriptions && this.subscriptions.length > 0) {
             for (let sub of this.subscriptions) {
                 sub.dispose();
             }
         }
+
+        this.subscriptions = [];
     }
 
     //#endregion
