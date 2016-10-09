@@ -342,7 +342,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
 
             this.editMode = true;
             this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
-            this.tableBody.scrollTop = 0;
+            this.tableBodyScroll.scrollTop = 0;
             this.recordManager.add().then(function () {
                 _this4.select(_this4.recordManager.currentRecord);
                 _this4.dispatch('on-record-add', { viewModel: _this4 });

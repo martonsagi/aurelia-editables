@@ -245,7 +245,7 @@ export let DataGrid = class DataGrid {
     add() {
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
-        this.tableBody.scrollTop = 0;
+        this.tableBodyScroll.scrollTop = 0;
         this.recordManager.add().then(() => {
             this.select(this.recordManager.currentRecord);
             this.dispatch('on-record-add', { viewModel: this });

@@ -42,6 +42,7 @@ export class DataGrid {
     tableBody: HTMLElement;
     tableContainer: HTMLElement;
     tableHeaderScroll: HTMLElement;
+    tableBodyScroll: HTMLElement;
 
     api: Api;
     apiClass: any;
@@ -386,7 +387,7 @@ export class DataGrid {
     add() {
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
-        this.tableBody.scrollTop = 0;
+        this.tableBodyScroll.scrollTop = 0;
 
         this.recordManager
             .add()
