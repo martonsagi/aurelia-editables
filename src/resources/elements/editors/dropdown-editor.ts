@@ -26,6 +26,8 @@ export class DropdownEditor {
 
     pluginConfig: Config;
 
+    loaded: boolean = false;
+
     //#endregion
 
     constructor() {
@@ -40,21 +42,53 @@ export class DropdownEditor {
     }
 
     attached() {
-        let t = this;
-        let editorSettings = <DataObjectFieldEditorViewModel>this.field.options.editor;
+        this.loaded = false;
+        let editorSettings = <DataObjectFieldEditorViewModel>this.field.options.editor,
+            displayProperty = editorSettings.displayProperty || 'text',
+            valueProperty = editorSettings.displayProperty || 'value';
         let callApi = editorSettings.api !== null
                    && editorSettings.api.length > 0
                    && !editorSettings.values;
 
         if (!callApi) {
-            this.values = editorSettings.values;
+            this.mapValues(editorSettings.values, displayProperty, valueProperty)
+                .then(result => {
+                    this.values = result;
+                    this.loaded = true;
+                });
         } else {
             this.api = new this.apiClass(editorSettings.api);
-            this.api.get().then(result => {
-                t.values = result;
-                editorSettings.values = result;
-            });
+            this.api
+                .read(editorSettings.query ? editorSettings.query : {})
+                .then(result => this.mapValues(result, displayProperty, valueProperty))
+                .then(result => {
+                    this.values = result;
+                    editorSettings.values = result;
+                    this.loaded = true;
+                });
         }
+    }
+
+    mapValues(values: Array<any>, displayProperty: string, valueProperty: string): Promise<Array<any>> {
+        return new Promise((resolve, reject) =>
+        {
+            let editorSettings = <DataObjectFieldEditorViewModel>this.field.options.editor;
+
+            if (editorSettings.mapValues === true) {
+
+                let result = [];
+                for (let item of values) {
+                    result.push({
+                        'text': item[displayProperty],
+                        'value': item[valueProperty]
+                    });
+                }
+
+                resolve(result);
+            } else {
+                resolve(values);
+            }
+        });
     }
 
     //#endregion

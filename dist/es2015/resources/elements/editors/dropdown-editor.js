@@ -13,6 +13,7 @@ import { Field } from '../field';
 import { Config } from '../../../config';
 export let DropdownEditor = class DropdownEditor {
     constructor() {
+        this.loaded = false;
         this.pluginConfig = Container.instance.get(Config);
         this.apiClass = this.pluginConfig.api;
     }
@@ -20,18 +21,41 @@ export let DropdownEditor = class DropdownEditor {
         this.field = model;
     }
     attached() {
-        let t = this;
-        let editorSettings = this.field.options.editor;
+        this.loaded = false;
+        let editorSettings = this.field.options.editor,
+            displayProperty = editorSettings.displayProperty || 'text',
+            valueProperty = editorSettings.displayProperty || 'value';
         let callApi = editorSettings.api !== null && editorSettings.api.length > 0 && !editorSettings.values;
         if (!callApi) {
-            this.values = editorSettings.values;
+            this.mapValues(editorSettings.values, displayProperty, valueProperty).then(result => {
+                this.values = result;
+                this.loaded = true;
+            });
         } else {
             this.api = new this.apiClass(editorSettings.api);
-            this.api.get().then(result => {
-                t.values = result;
+            this.api.read(editorSettings.query ? editorSettings.query : {}).then(result => this.mapValues(result, displayProperty, valueProperty)).then(result => {
+                this.values = result;
                 editorSettings.values = result;
+                this.loaded = true;
             });
         }
+    }
+    mapValues(values, displayProperty, valueProperty) {
+        return new Promise((resolve, reject) => {
+            let editorSettings = this.field.options.editor;
+            if (editorSettings.mapValues === true) {
+                let result = [];
+                for (let item of values) {
+                    result.push({
+                        'text': item[displayProperty],
+                        'value': item[valueProperty]
+                    });
+                }
+                resolve(result);
+            } else {
+                resolve(values);
+            }
+        });
     }
 };
 __decorate([bindable({ defaultBindingMode: bindingMode.twoWay }), __metadata('design:type', Field)], DropdownEditor.prototype, "field", void 0);

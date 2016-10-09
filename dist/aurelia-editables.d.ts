@@ -145,6 +145,10 @@ declare module 'aurelia-editables' {
         api?: string;
         values?: Array<any>;
         type?: string;
+        mapValues?: boolean;
+        valueProperty?: string;
+        displayProperty?: string;
+        query?: QueryModel
     }
 
 

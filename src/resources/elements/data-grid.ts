@@ -25,6 +25,7 @@ export class DataGrid {
     @bindable childMode: boolean = false;
     @bindable canLoad: boolean = false;
     @bindable showToolbar: boolean = true;
+    @bindable showHeader: boolean = true;
     @bindable filterVisible: boolean = false;
     @bindable toolbarTemplate: string;
 
@@ -347,8 +348,6 @@ export class DataGrid {
     //#region Basic features (Selection, Pager)
 
     select(rec) {
-        this.dispatch('on-select', { viewModel: this });
-
         if (this.recordManager.currentRecord)
             this.recordManager.currentRecord.editMode = false;
 
@@ -359,6 +358,8 @@ export class DataGrid {
         this.recordManager.current(rec);
 
         this.validate();
+
+        this.dispatch('on-select', { viewModel: this });
 
         return true;
     }
@@ -385,6 +386,7 @@ export class DataGrid {
     add() {
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
+        this.tableBody.scrollTop = 0;
 
         this.recordManager
             .add()

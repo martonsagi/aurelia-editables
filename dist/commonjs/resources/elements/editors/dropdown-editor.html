@@ -1,5 +1,8 @@
 <template>
-    <select value.bind="field.fieldValue & validate" class="form-control" blur.trigger="field.blur($event)">
+    <select disabled.bind="loaded !== true"
+            value.bind="field.fieldValue & validate"
+            class="form-control"
+            blur.trigger="field.blur($event)">
         <option model.bind="null">
             ${'Choose...' | t}
         </option>

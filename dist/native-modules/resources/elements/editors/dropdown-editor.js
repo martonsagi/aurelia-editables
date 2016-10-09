@@ -20,6 +20,7 @@ export var DropdownEditor = function () {
     function DropdownEditor() {
         _classCallCheck(this, DropdownEditor);
 
+        this.loaded = false;
         this.pluginConfig = Container.instance.get(Config);
         this.apiClass = this.pluginConfig.api;
     }
@@ -29,18 +30,61 @@ export var DropdownEditor = function () {
     };
 
     DropdownEditor.prototype.attached = function attached() {
-        var t = this;
-        var editorSettings = this.field.options.editor;
+        var _this = this;
+
+        this.loaded = false;
+        var editorSettings = this.field.options.editor,
+            displayProperty = editorSettings.displayProperty || 'text',
+            valueProperty = editorSettings.displayProperty || 'value';
         var callApi = editorSettings.api !== null && editorSettings.api.length > 0 && !editorSettings.values;
         if (!callApi) {
-            this.values = editorSettings.values;
+            this.mapValues(editorSettings.values, displayProperty, valueProperty).then(function (result) {
+                _this.values = result;
+                _this.loaded = true;
+            });
         } else {
             this.api = new this.apiClass(editorSettings.api);
-            this.api.get().then(function (result) {
-                t.values = result;
+            this.api.read(editorSettings.query ? editorSettings.query : {}).then(function (result) {
+                return _this.mapValues(result, displayProperty, valueProperty);
+            }).then(function (result) {
+                _this.values = result;
                 editorSettings.values = result;
+                _this.loaded = true;
             });
         }
+    };
+
+    DropdownEditor.prototype.mapValues = function mapValues(values, displayProperty, valueProperty) {
+        var _this2 = this;
+
+        return new Promise(function (resolve, reject) {
+            var editorSettings = _this2.field.options.editor;
+            if (editorSettings.mapValues === true) {
+                var result = [];
+                for (var _iterator = values, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                    var _ref;
+
+                    if (_isArray) {
+                        if (_i >= _iterator.length) break;
+                        _ref = _iterator[_i++];
+                    } else {
+                        _i = _iterator.next();
+                        if (_i.done) break;
+                        _ref = _i.value;
+                    }
+
+                    var item = _ref;
+
+                    result.push({
+                        'text': item[displayProperty],
+                        'value': item[valueProperty]
+                    });
+                }
+                resolve(result);
+            } else {
+                resolve(values);
+            }
+        });
     };
 
     return DropdownEditor;

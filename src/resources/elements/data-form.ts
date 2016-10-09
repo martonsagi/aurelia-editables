@@ -53,6 +53,10 @@ export class DataForm {
         this.groups = <Array<DataObjectFormGroupViewModel>>[];
         if (currentGroups === null) {
             this.groups.push({ id: 0, name: null, fields: this.options.columns });
+            if (!this.options.form) {
+                this.options.form = {};
+            }
+
             this.options.form.groupCols = 'col-xs-12';
         } else {            
             for (let group of currentGroups) {

@@ -66,7 +66,7 @@
 
             <div ref="tableHeaderScroll" class="data-grid-header">
                 <table ref="tableHeader" class="table table-striped">
-                <thead>
+                <thead show.bind="showHeader">
                     <tr>
                         <th if.bind="options.editing === true || options.children.length > 0">
                             <div style="min-width: 100px;">&nbsp;</div>

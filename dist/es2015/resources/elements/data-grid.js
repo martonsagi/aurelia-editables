@@ -23,6 +23,7 @@ export let DataGrid = class DataGrid {
         this.childMode = false;
         this.canLoad = false;
         this.showToolbar = true;
+        this.showHeader = true;
         this.filterVisible = false;
         this.queryModel = { filters: [] };
         this.columnFilters = null;
@@ -222,13 +223,13 @@ export let DataGrid = class DataGrid {
         this.refresh();
     }
     select(rec) {
-        this.dispatch('on-select', { viewModel: this });
         if (this.recordManager.currentRecord) this.recordManager.currentRecord.editMode = false;
         if (rec) {
             rec.editMode = this.editMode || this.formMode;
         }
         this.recordManager.current(rec);
         this.validate();
+        this.dispatch('on-select', { viewModel: this });
         return true;
     }
     changePage(newPage, newSize) {
@@ -244,6 +245,7 @@ export let DataGrid = class DataGrid {
     add() {
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
+        this.tableBody.scrollTop = 0;
         this.recordManager.add().then(() => {
             this.select(this.recordManager.currentRecord);
             this.dispatch('on-record-add', { viewModel: this });
@@ -400,6 +402,7 @@ __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "childMode", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
+__decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showHeader", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
 __decorate([bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);

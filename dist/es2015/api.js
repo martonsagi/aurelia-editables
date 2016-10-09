@@ -6,7 +6,7 @@ export let Api = class Api {
         this.baseUrl = baseUrl;
     }
     read(params) {
-        return this.client.createRequest(this.baseUrl).asGet().withParams({ 'query': JSON.stringify(params) }).send().then(result => JSON.parse(result.response));
+        return this.client.createRequest(this.baseUrl).asGet().withParams({ 'query': params ? JSON.stringify(params) : {} }).send().then(result => JSON.parse(result.response));
     }
     get(id = null) {
         id = id || null;

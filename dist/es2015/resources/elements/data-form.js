@@ -27,6 +27,9 @@ export let DataForm = class DataForm {
         this.groups = [];
         if (currentGroups === null) {
             this.groups.push({ id: 0, name: null, fields: this.options.columns });
+            if (!this.options.form) {
+                this.options.form = {};
+            }
             this.options.form.groupCols = 'col-xs-12';
         } else {
             for (let group of currentGroups) {

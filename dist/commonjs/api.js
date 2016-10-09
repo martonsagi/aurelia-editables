@@ -20,7 +20,7 @@ var Api = exports.Api = function () {
     }
 
     Api.prototype.read = function read(params) {
-        return this.client.createRequest(this.baseUrl).asGet().withParams({ 'query': JSON.stringify(params) }).send().then(function (result) {
+        return this.client.createRequest(this.baseUrl).asGet().withParams({ 'query': params ? JSON.stringify(params) : {} }).send().then(function (result) {
             return JSON.parse(result.response);
         });
     };

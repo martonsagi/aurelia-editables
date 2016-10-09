@@ -21,10 +21,10 @@ export class Api {
 
     //#region GET operations
 
-    read(params: any): Promise<any> {   
+    read(params?: any): Promise<any> {
         return this.client.createRequest(this.baseUrl)
                 .asGet()
-                .withParams({'query': JSON.stringify(params)})
+                .withParams({'query': params ? JSON.stringify(params) : {}})
                 .send()
                 .then(result => JSON.parse(result.response));
     }

@@ -70,6 +70,9 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
             this.groups = [];
             if (currentGroups === null) {
                 this.groups.push({ id: 0, name: null, fields: this.options.columns });
+                if (!this.options.form) {
+                    this.options.form = {};
+                }
                 this.options.form.groupCols = 'col-xs-12';
             } else {
                 var _loop = function _loop() {

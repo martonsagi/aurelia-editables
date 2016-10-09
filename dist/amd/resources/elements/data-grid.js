@@ -58,6 +58,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.childMode = false;
             this.canLoad = false;
             this.showToolbar = true;
+            this.showHeader = true;
             this.filterVisible = false;
             this.queryModel = { filters: [] };
             this.columnFilters = null;
@@ -315,13 +316,13 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
         };
 
         DataGrid.prototype.select = function select(rec) {
-            this.dispatch('on-select', { viewModel: this });
             if (this.recordManager.currentRecord) this.recordManager.currentRecord.editMode = false;
             if (rec) {
                 rec.editMode = this.editMode || this.formMode;
             }
             this.recordManager.current(rec);
             this.validate();
+            this.dispatch('on-select', { viewModel: this });
             return true;
         };
 
@@ -341,6 +342,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
 
             this.editMode = true;
             this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
+            this.tableBody.scrollTop = 0;
             this.recordManager.add().then(function () {
                 _this4.select(_this4.recordManager.currentRecord);
                 _this4.dispatch('on-record-add', { viewModel: _this4 });
@@ -532,6 +534,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "childMode", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
+    __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showHeader", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);
