@@ -86,6 +86,9 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
             newRow.setRecordManager(this);
             return newRow.setValidationFields(this.validationFields).then(function () {
                 _this2.isValid = false;
+                if (_this2.isDirty === false) {
+                    _this2.isDirty = true;
+                }
                 _this2.records.unshift(newRow);
                 _this2.current(_this2.records[0]);
                 for (var _iterator2 = _this2.queryModel.filters, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
@@ -131,6 +134,9 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
             var i = this.records.indexOf(item);
             if (item.state !== _record.RecordState.added) {
                 this.records[i].state = _record.RecordState.deleted;
+                if (this.isDirty === false) {
+                    this.isDirty = true;
+                }
             } else {
                 item.dispose();
                 this.records.splice(i, 1);
@@ -214,6 +220,7 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
                 originalRows.push(originalRow);
             }
             this.originalRecords = this.setOriginal(originalRows);
+            this.isDirty = false;
         };
 
         RecordManager.prototype.cancel = function cancel() {

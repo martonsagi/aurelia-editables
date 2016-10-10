@@ -59,6 +59,9 @@ export class RecordManager implements Disposable {
             .then(() => {
 
                 this.isValid = false;
+                if (this.isDirty === false) {
+                    this.isDirty = true;
+                }
 
                 this.records.unshift(newRow);
                 this.current(this.records[0]);
@@ -98,6 +101,9 @@ export class RecordManager implements Disposable {
 
         if (item.state !== RecordState.added) {
             this.records[i].state = RecordState.deleted;
+            if (this.isDirty === false) {
+                this.isDirty = true;
+            }
         } else {
             item.dispose();
             this.records.splice(i, 1);
@@ -135,6 +141,8 @@ export class RecordManager implements Disposable {
         }
 
         this.originalRecords = this.setOriginal(originalRows);
+
+        this.isDirty = false;
     }
 
     cancel() {

@@ -44,6 +44,9 @@ export let RecordManager = class RecordManager {
         newRow.setRecordManager(this);
         return newRow.setValidationFields(this.validationFields).then(() => {
             this.isValid = false;
+            if (this.isDirty === false) {
+                this.isDirty = true;
+            }
             this.records.unshift(newRow);
             this.current(this.records[0]);
             for (let filter of this.queryModel.filters) {
@@ -70,6 +73,9 @@ export let RecordManager = class RecordManager {
         let i = this.records.indexOf(item);
         if (item.state !== RecordState.added) {
             this.records[i].state = RecordState.deleted;
+            if (this.isDirty === false) {
+                this.isDirty = true;
+            }
         } else {
             item.dispose();
             this.records.splice(i, 1);
@@ -100,6 +106,7 @@ export let RecordManager = class RecordManager {
             originalRows.push(originalRow);
         }
         this.originalRecords = this.setOriginal(originalRows);
+        this.isDirty = false;
     }
     cancel() {
         if (this.isDirty === false) {
