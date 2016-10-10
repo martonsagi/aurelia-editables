@@ -44,7 +44,9 @@ export class Field {
     validationMode = validateTrigger.change;
     controller: ValidationController;
     errors: Array<any>;
-    isValid = false;
+
+    @observable()
+    isValid = null;
     pluginConfig: Config;
     init: number = 0;
     validator: any;
@@ -57,10 +59,6 @@ export class Field {
         this.element = element;
         this.fieldModel = this;
         this.pluginConfig = config;
-
-        //bindingEngine
-        //    .propertyObserver(this, 'isValid')
-        //    .subscribe(this.isValidChanged.bind(this));
 
         this.dispatch('on-created', { viewModel: this });
     }
@@ -102,21 +100,22 @@ export class Field {
             // this.options could be a deep-observed object,
             // which has an '__observers__' own property that should be skipped
             let props = Object
-                .getOwnPropertyNames(this.options.validation)
-                .filter(prop => prop !== '__observers__');
+                .getOwnPropertyNames(this.options.validation);
 
             if (props.length > 0) {
                 let validator: any = ValidationRules;
 
                 for (let key of props) {
-                    let ruleConfig = this.options.validation[key],
-                        ruleName = key;
+                    if (key !== '__observers__') {
+                        let ruleConfig = this.options.validation[key],
+                            ruleName = key;
 
-                    validator = validator
-                        .ensure('fieldValue')
-                        .displayName(this.options.title || this.options.name)
-                        .satisfiesRule(ruleName,...ruleConfig)
-                        .on(this);
+                        validator = validator
+                            .ensure('fieldValue')
+                            .displayName(this.options.title || this.options.name)
+                            .satisfiesRule(ruleName, ...ruleConfig)
+                            .on(this);
+                    }
                 }
 
                 this.validator = validator;
@@ -129,20 +128,24 @@ export class Field {
 
         this.controller.validate().then(errors => {
             this.errors = errors;
-            this.isValid = this.errors.length === 0;
+            let isValid = this.errors.length === 0;
 
-            if (this.record && this.record.setValidationStatus) {
+            if (this.isValid !== isValid && this.options && this.record && this.record.setValidationStatus) {
+                this.isValid = isValid;
 
                 this.record.setValidationStatus(this.options.name,
-                    (this.isValid === true ? RecordValidationState.valid : RecordValidationState.invalid));
-                this.record.validate();
+                    (this.isValid === true ? RecordValidationState.valid : RecordValidationState.invalid))
+                    .then(() => {
+                        this.dispatch('on-after-validate', {viewModel: this});
+                    });
             }
 
-            this.dispatch('on-after-validate', { viewModel: this });
+
+
         });
     }
 
-    fieldValueChanged() {
+    fieldValueChanged(newVal, oldVal) {
         if (this.editMode === true) {
             this.validate();
         }
@@ -153,7 +156,6 @@ export class Field {
     }
 
     blur() {
-        this.validate();
         this.dispatch('on-blur', { viewModel: this });
     }
 

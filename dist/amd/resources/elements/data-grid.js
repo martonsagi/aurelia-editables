@@ -1,4 +1,4 @@
-define(["exports", "aurelia-framework", "../../config", "../../api", "../../record", "../../record-manager", "../../deep-observer"], function (exports, _aureliaFramework, _config, _api, _record, _recordManager, _deepObserver) {
+define(["exports", "aurelia-framework", "../../config", "../../api", "../../record-manager", "../../deep-observer", "aurelia-binding"], function (exports, _aureliaFramework, _config, _api, _recordManager, _deepObserver, _aureliaBinding) {
     "use strict";
 
     Object.defineProperty(exports, "__esModule", {
@@ -60,6 +60,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.showToolbar = true;
             this.showHeader = true;
             this.filterVisible = false;
+            this.firstInit = true;
             this.queryModel = { filters: [] };
             this.columnFilters = null;
             this.sortSettings = null;
@@ -72,8 +73,6 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.gridModel = this;
             this.dispatch('on-created', { viewModel: this });
         }
-
-        DataGrid.prototype.created = function created() {};
 
         DataGrid.prototype.bind = function bind(bindingContext) {
             this.dispatch('on-bind', { viewModel: this, context: bindingContext });
@@ -93,6 +92,12 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.editMode = false;
             this.deepObserverDisposer();
             this.recordManagerDisposer();
+        };
+
+        DataGrid.prototype.recordManagerDisposer = function recordManagerDisposer() {
+            if (this.recordManager.records && this.recordManager.records.length > 0) {
+                this.recordManager.dispose();
+            }
         };
 
         DataGrid.prototype.init = function init(canLoad) {
@@ -147,10 +152,13 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                 t.recordManager = new _recordManager.RecordManager(t.entity);
                 t.recordManager.queryModel = t.queryModel;
                 t.recordManager.setValidationFields(t.validationFields);
-                t.recordManager.load(result.data);
+                return t.recordManager.load(result.data);
+            }).then(function () {
                 t.select(t.recordManager.records[0]);
+                t.updateColumnWidth(t.firstInit);
                 t.loading = false;
-                _this2.dispatch('on-after-load', { viewModel: t });
+                t.firstInit = false;
+                t.dispatch('on-after-load', { viewModel: t });
             });
         };
 
@@ -168,7 +176,9 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
         DataGrid.prototype.loadColumns = function loadColumns() {
             var t = this;
             return new Promise(function (resolve, reject) {
-                var tasks = [];
+                var tasks = [],
+                    columnTotalWidth = 0,
+                    dynamicColumns = [];
 
                 var _loop = function _loop() {
                     if (_isArray) {
@@ -223,9 +233,54 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             this.validationFields = fields;
         };
 
-        DataGrid.prototype.recordManagerDisposer = function recordManagerDisposer() {
-            if (this.recordManager.records && this.recordManager.records.length > 0) {
-                this.recordManager.dispose();
+        DataGrid.prototype.updateColumnWidth = function updateColumnWidth() {
+            var resize = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+
+            var columnTotalWidth = 0,
+                dynamicColumns = [],
+                bodyWidth = this.tableBodyScroll.getBoundingClientRect().width,
+                rowActions = this.tableHeaderScroll.querySelector('.row-actions'),
+                rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
+            for (var _iterator2 = this.options.columns, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+                var _ref2;
+
+                if (_isArray2) {
+                    if (_i2 >= _iterator2.length) break;
+                    _ref2 = _iterator2[_i2++];
+                } else {
+                    _i2 = _iterator2.next();
+                    if (_i2.done) break;
+                    _ref2 = _i2.value;
+                }
+
+                var _column = _ref2;
+
+                if (_column.width > 0 && resize === false) {
+                    columnTotalWidth += _column.width;
+                } else {
+                    dynamicColumns.push(_column);
+                }
+            }
+            if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
+                var divider = dynamicColumns.length,
+                    proposedWidth = Math.floor((bodyWidth - columnTotalWidth - rowActionsWidth - 18) / divider);
+                proposedWidth = proposedWidth < 150 ? 150 : proposedWidth - 16;
+                for (var _iterator3 = dynamicColumns, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+                    var _ref3;
+
+                    if (_isArray3) {
+                        if (_i3 >= _iterator3.length) break;
+                        _ref3 = _iterator3[_i3++];
+                    } else {
+                        _i3 = _iterator3.next();
+                        if (_i3.done) break;
+                        _ref3 = _i3.value;
+                    }
+
+                    var dynamicCol = _ref3;
+
+                    dynamicCol.width = proposedWidth;
+                }
             }
         };
 
@@ -263,19 +318,19 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                         break;
                 }
             }
-            for (var _iterator2 = filters, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-                var _ref2;
+            for (var _iterator4 = filters, _isArray4 = Array.isArray(_iterator4), _i4 = 0, _iterator4 = _isArray4 ? _iterator4 : _iterator4[Symbol.iterator]();;) {
+                var _ref4;
 
-                if (_isArray2) {
-                    if (_i2 >= _iterator2.length) break;
-                    _ref2 = _iterator2[_i2++];
+                if (_isArray4) {
+                    if (_i4 >= _iterator4.length) break;
+                    _ref4 = _iterator4[_i4++];
                 } else {
-                    _i2 = _iterator2.next();
-                    if (_i2.done) break;
-                    _ref2 = _i2.value;
+                    _i4 = _iterator4.next();
+                    if (_i4.done) break;
+                    _ref4 = _i4.value;
                 }
 
-                var filter = _ref2;
+                var filter = _ref4;
 
                 if (filter.field === column) {
                     if (filterValue !== null && filterValue.length > 0) {
@@ -321,7 +376,6 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                 rec.editMode = this.editMode || this.formMode;
             }
             this.recordManager.current(rec);
-            this.validate();
             this.dispatch('on-select', { viewModel: this });
             return true;
         };
@@ -383,7 +437,7 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             var _this6 = this;
 
             var t = this,
-                changes = t.getChanges();
+                changes = this.recordManager.getChanges();
             this.dispatch('on-before-save', { viewModel: this, changes: changes });
             var tasks = [];
             if (changes.added.length > 0) {
@@ -422,13 +476,13 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
         };
 
         DataGrid.prototype.cancel = function cancel(showConfirm) {
-            var isDirty = this.recordManager.dirty();
+            var isDirty = this.recordManager.isDirty;
             if (showConfirm === true && isDirty === true) {
                 if (!confirm('You have unsaved changes. Are you sure you wish to leave?')) {
                     return false;
                 }
             }
-            var changes = this.getChanges();
+            var changes = this.recordManager.getChanges();
             this.dispatch('on-before-cancel', { viewModel: this, changes: changes });
             if (isDirty === true) this.recordManager.cancel();
             this.editMode = false;
@@ -442,24 +496,6 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
 
         DataGrid.prototype.onRecordsChange = function onRecordsChange(splice) {
             this.dispatch('on-records-changed', { viewModel: this, changes: splice });
-        };
-
-        DataGrid.prototype.getChanges = function getChanges() {
-            var modified = this.recordManager.records.filter(function (item) {
-                return item.state === _record.RecordState.modified;
-            });
-            var added = this.recordManager.records.filter(function (item) {
-                return item.state === _record.RecordState.added;
-            });
-            var deleted = this.recordManager.records.filter(function (item) {
-                return item.state === _record.RecordState.deleted;
-            });
-            return {
-                added: added,
-                modified: modified,
-                deleted: deleted,
-                dirty: added.length > 0 || modified.length > 0 || deleted.length > 0
-            };
         };
 
         DataGrid.prototype.validate = function validate() {
@@ -505,6 +541,16 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
             });
         };
 
+        DataGrid.prototype.editModeChanged = function editModeChanged() {
+            var _this7 = this;
+
+            if (this.editMode === true && this.formMode !== true) {
+                setTimeout(function () {
+                    return _this7.validate();
+                }, 100);
+            }
+        };
+
         DataGrid.prototype.onScroll = function onScroll(event) {
             this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;
         };
@@ -538,5 +584,6 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);
+    __decorate([(0, _aureliaBinding.observable)(), __metadata('design:type', Boolean)], DataGrid.prototype, "loading", void 0);
     exports.DataGrid = DataGrid = __decorate([_aureliaFramework.autoinject, __metadata('design:paramtypes', [Element, _deepObserver.DeepObserver])], DataGrid);
 });

@@ -32,7 +32,7 @@
 
             </button>
 
-            <button if.bind="options.editing === true" disabled.bind="recordManager.isValid !== true" class="btn btn-success" click.delegate="save($event)" title="${'Save' | t}">
+            <button if.bind="options.editing === true" disabled.bind="recordManager.isValid !== true" class="btn btn-success" click.trigger="save($event)" title="${'Save' | t}">
                 <i class="fa fa-floppy-o"></i> <span class="hidden-xs"> ${'Save' | t}</span>
             </button>
 

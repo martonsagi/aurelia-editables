@@ -33,7 +33,12 @@ export let DataForm = class DataForm {
             this.options.form.groupCols = 'col-xs-12';
         } else {
             for (let group of currentGroups) {
-                let groupFields = this.options.columns.filter(column => column.groupId === group.id);
+                let groupFields = [];
+                for (let col of this.options.columns) {
+                    if (col.groupId === group.id) {
+                        groupFields.push(col);
+                    }
+                }
                 this.groups.push({ id: group.id, name: group.name, fields: groupFields });
             }
         }
@@ -68,8 +73,9 @@ export let DataForm = class DataForm {
     validate() {
         if (this.editMode === true) {
             this.dispatch('on-before-validate', { viewModel: this });
-            this.record.validate();
-            this.dispatch('on-after-validate', this);
+            this.record.validate().then(() => {
+                this.dispatch('on-after-validate', this);
+            });
         } else {
             this.dispatch('on-skip-validate', { viewModel: this });
         }

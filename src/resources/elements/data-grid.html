@@ -1,4 +1,5 @@
 ﻿<template ref="dataGrid">
+
     <!-- Child Grids -->
     <div if.bind="childMode">
         <div class="animated fadeIn panel panel-primary">
@@ -68,7 +69,7 @@
                 <table ref="tableHeader" class="table table-striped">
                 <thead show.bind="showHeader">
                     <tr>
-                        <th if.bind="options.editing === true || options.children.length > 0">
+                        <th class="row-actions" if.bind="options.editing === true || options.children.length > 0">
                             <div style="min-width: 100px;">&nbsp;</div>
                         </th>
                         <th id="th-${column.name}"
@@ -135,6 +136,7 @@
                                     <i class="fa fa-remove"></i>
                                 </button>
                             </div>
+
                         </td>
                         <td class="td-${column.name}"
                             show.bind="column.hide !== true"

@@ -13,6 +13,7 @@ import { observable } from 'aurelia-framework';
 export let RecordManager = class RecordManager {
     constructor(template) {
         this.isValid = false;
+        this.isDirty = false;
         this.queryModel = { filters: [] };
         this.validationFields = [];
         this._template = template;
@@ -26,12 +27,16 @@ export let RecordManager = class RecordManager {
         }
     }
     load(data) {
-        this.setOriginal(data);
-        for (let row of data) {
-            let record = new Record(row);
-            record.setRecordManager(this);
-            this.records.push(record);
-        }
+        return new Promise((resolve, reject) => {
+            this.setOriginal(data);
+            for (let row of data) {
+                let record = new Record(row);
+                record.setRecordManager(this);
+                this.records.push(record);
+            }
+            this.isDirty = false;
+            resolve();
+        });
     }
     add() {
         let templateData = JSON.parse(JSON.stringify(this._template));
@@ -52,8 +57,7 @@ export let RecordManager = class RecordManager {
             this.currentRecord.editMode = toggle;
             return new Promise((resolve, reject) => {
                 if (toggle === true) {
-                    this.currentRecord.setValidationFields(this.validationFields).then(() => {
-                        this.currentRecord.validate();
+                    this.currentRecord.setValidationFields(this.validationFields).then(() => this.currentRecord.validate()).then(() => {
                         resolve();
                     });
                 } else {
@@ -97,19 +101,11 @@ export let RecordManager = class RecordManager {
         }
         this.originalRecords = this.setOriginal(originalRows);
     }
-    dirty() {
-        for (let item of this.records) {
-            if (item.state !== RecordState.unchanged) {
-                return true;
-            }
-        }
-        return false;
-    }
     cancel() {
-        let changes = this.getChanges();
-        if (changes.dirty === false) {
+        if (this.isDirty === false) {
             return false;
         }
+        let changes = this.getChanges();
         if (changes.added.length > 0) {
             for (let row of changes.added) {
                 let index = this.records.indexOf(row);
@@ -133,6 +129,7 @@ export let RecordManager = class RecordManager {
         } else {
             this.currentRecord = {};
         }
+        this.isDirty = false;
     }
     setOriginal(data) {
         this.originalRecords = JSON.parse(JSON.stringify(data));
@@ -166,12 +163,18 @@ export let RecordManager = class RecordManager {
         this.validationFields = fieldNames;
     }
     validate() {
-        this.isValid = false;
-        if (this.dirty() === false) {
+        let isValid = null;
+        if (this.isDirty === false) {
+            this.isValid = false;
             return;
         }
-        let rows = this.records.filter(item => (item.state === RecordState.added || item.state === RecordState.modified) && item.isValid === false);
-        this.isValid = rows.length === 0;
+        for (let item of this.records) {
+            if ((item.state === RecordState.added || item.state === RecordState.modified) && item.isValid === false) {
+                isValid = false;
+                break;
+            }
+        }
+        this.isValid = isValid === null;
     }
     dispose() {
         if (this.records.length > 0) {
@@ -186,3 +189,4 @@ export let RecordManager = class RecordManager {
 };
 __decorate([observable, __metadata('design:type', Object)], RecordManager.prototype, "currentRecord", void 0);
 __decorate([observable(), __metadata('design:type', Boolean)], RecordManager.prototype, "isValid", void 0);
+__decorate([observable(), __metadata('design:type', Boolean)], RecordManager.prototype, "isDirty", void 0);

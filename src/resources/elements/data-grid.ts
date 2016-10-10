@@ -8,6 +8,7 @@ import { Pager } from './pager';
 import { Record, RecordState } from '../../record';
 import { RecordManager } from '../../record-manager';
 import { DeepObserver } from '../../deep-observer';
+import {observable} from "aurelia-binding";
 
 //#endregion
 
@@ -46,7 +47,10 @@ export class DataGrid {
 
     api: Api;
     apiClass: any;
+
+    @observable()
     loading: boolean;
+    firstInit: boolean = true;
 
     queryModel: QueryModel = { filters: []  };
     columnFilters: Array<any> = null;
@@ -83,9 +87,6 @@ export class DataGrid {
 
     //#region au events
 
-    created() {
-    }
-
     bind(bindingContext) {
         this.dispatch('on-bind', { viewModel: this, context: bindingContext});
         this.recordManager = new RecordManager();
@@ -109,6 +110,12 @@ export class DataGrid {
         this.editMode = false;
         this.deepObserverDisposer();
         this.recordManagerDisposer();
+    }
+
+    recordManagerDisposer() {
+        if (this.recordManager.records && this.recordManager.records.length > 0) {
+            this.recordManager.dispose();
+        }
     }
 
     //#endregion
@@ -175,18 +182,22 @@ export class DataGrid {
                 t.total = result.total;
 
                 t.recordManagerDisposer();
-
                 t.loadValidationFields();
+
                 t.recordManager = new RecordManager(t.entity);
                 t.recordManager.queryModel = t.queryModel;
                 t.recordManager.setValidationFields(t.validationFields);
-                t.recordManager.load(result.data);
 
+                return t.recordManager.load(result.data);
+            })
+            .then(() => {
                 t.select(t.recordManager.records[0]);
-                //setTimeout(() => t.loading = false, 1000);
-                t.loading = false;
 
-                this.dispatch('on-after-load', { viewModel: t });
+                t.updateColumnWidth(t.firstInit);
+                t.loading = false;
+                t.firstInit = false;
+
+                t.dispatch('on-after-load', {viewModel: t});
             });
     }
 
@@ -207,7 +218,9 @@ export class DataGrid {
     loadColumns() {
         let t = this;
         return new Promise(function (resolve, reject) {
-            let tasks = [];
+            let tasks = [],
+                columnTotalWidth = 0,
+                dynamicColumns = [];
 
             for (let column of t.options.columns) {
                 let editorSettings = column.editor;
@@ -246,9 +259,30 @@ export class DataGrid {
         this.validationFields = fields;
     }
 
-    recordManagerDisposer() {
-        if (this.recordManager.records && this.recordManager.records.length > 0) {
-            this.recordManager.dispose();
+    updateColumnWidth(resize: boolean = false) {
+        let columnTotalWidth = 0,
+            dynamicColumns = [],
+            bodyWidth: any = this.tableBodyScroll.getBoundingClientRect().width,
+            rowActions: any = this.tableHeaderScroll.querySelector('.row-actions'),
+            rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
+
+        for (let column of this.options.columns) {
+            if (column.width > 0 && resize === false) {
+                columnTotalWidth += column.width;
+            } else {
+                dynamicColumns.push(column);
+            }
+        }
+
+        if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
+            let divider = dynamicColumns.length,
+                proposedWidth = Math.floor((bodyWidth - columnTotalWidth - rowActionsWidth - 18) / divider);
+
+            proposedWidth = proposedWidth < 150 ? 150 : (proposedWidth - 16);
+
+            for (let dynamicCol of dynamicColumns) {
+                dynamicCol.width = proposedWidth;
+            }
         }
     }
 
@@ -358,7 +392,7 @@ export class DataGrid {
 
         this.recordManager.current(rec);
 
-        this.validate();
+        //this.validate();
 
         this.dispatch('on-select', { viewModel: this });
 
@@ -431,7 +465,7 @@ export class DataGrid {
 
     save() {
         let t = this,
-            changes = t.getChanges();
+            changes = this.recordManager.getChanges();
 
         this.dispatch('on-before-save', { viewModel: this, changes: changes });
 
@@ -488,7 +522,7 @@ export class DataGrid {
     }
 
     cancel(showConfirm: boolean | null) {
-        let isDirty = this.recordManager.dirty();
+        let isDirty = this.recordManager.isDirty;
 
         if (showConfirm === true && isDirty === true) {
             if (!confirm('You have unsaved changes. Are you sure you wish to leave?')) {
@@ -496,7 +530,7 @@ export class DataGrid {
             }
         }
 
-        let changes = this.getChanges();
+        let changes = this.recordManager.getChanges();
         this.dispatch('on-before-cancel', { viewModel: this, changes: changes });
 
         if (isDirty === true)
@@ -515,27 +549,6 @@ export class DataGrid {
 
     onRecordsChange(splice) {
         this.dispatch('on-records-changed', { viewModel: this, changes: splice });
-    }
-
-    getChanges() {
-        let modified = this.recordManager.records.filter(item => {
-            return item.state === RecordState.modified;
-        });
-
-        let added = this.recordManager.records.filter(item => {
-            return item.state === RecordState.added;
-        });
-
-        let deleted = this.recordManager.records.filter(item => {
-            return item.state === RecordState.deleted;
-        });
-
-        return {
-            added: added,
-            modified: modified,
-            deleted: deleted,
-            dirty: added.length > 0 || modified.length > 0 || deleted.length > 0
-        };
     }
 
     //#endregion
@@ -606,6 +619,12 @@ export class DataGrid {
             oldValue: oldValue,
             property: property
         });
+    }
+
+    editModeChanged() {
+        if (this.editMode === true && this.formMode !== true) {
+            setTimeout(() => this.validate(), 100);
+        }
     }
 
     onScroll(event) {

@@ -64,8 +64,6 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
         };
 
         DataForm.prototype.attached = function attached() {
-            var _this = this;
-
             var currentGroups = this.options.form && this.options.form.groups && this.options.form.groups.length > 0 ? this.options.form.groups : null;
             this.groups = [];
             if (currentGroups === null) {
@@ -75,30 +73,40 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
                 }
                 this.options.form.groupCols = 'col-xs-12';
             } else {
-                var _loop = function _loop() {
+                for (var _iterator = currentGroups, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                    var _ref;
+
                     if (_isArray) {
-                        if (_i >= _iterator.length) return "break";
+                        if (_i >= _iterator.length) break;
                         _ref = _iterator[_i++];
                     } else {
                         _i = _iterator.next();
-                        if (_i.done) return "break";
+                        if (_i.done) break;
                         _ref = _i.value;
                     }
 
                     var group = _ref;
 
-                    var groupFields = _this.options.columns.filter(function (column) {
-                        return column.groupId === group.id;
-                    });
-                    _this.groups.push({ id: group.id, name: group.name, fields: groupFields });
-                };
+                    var groupFields = [];
+                    for (var _iterator2 = this.options.columns, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+                        var _ref2;
 
-                for (var _iterator = currentGroups, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-                    var _ref;
+                        if (_isArray2) {
+                            if (_i2 >= _iterator2.length) break;
+                            _ref2 = _iterator2[_i2++];
+                        } else {
+                            _i2 = _iterator2.next();
+                            if (_i2.done) break;
+                            _ref2 = _i2.value;
+                        }
 
-                    var _ret = _loop();
+                        var col = _ref2;
 
-                    if (_ret === "break") break;
+                        if (col.groupId === group.id) {
+                            groupFields.push(col);
+                        }
+                    }
+                    this.groups.push({ id: group.id, name: group.name, fields: groupFields });
                 }
             }
             this.dispatch('on-attached', this);
@@ -126,20 +134,23 @@ define(["exports", "aurelia-framework", "../../record"], function (exports, _aur
         };
 
         DataForm.prototype.editModeChanged = function editModeChanged() {
-            var _this2 = this;
+            var _this = this;
 
             if (this.editMode === true) {
                 setTimeout(function () {
-                    return _this2.validate();
+                    return _this.validate();
                 }, 100);
             }
         };
 
         DataForm.prototype.validate = function validate() {
+            var _this2 = this;
+
             if (this.editMode === true) {
                 this.dispatch('on-before-validate', { viewModel: this });
-                this.record.validate();
-                this.dispatch('on-after-validate', this);
+                this.record.validate().then(function () {
+                    _this2.dispatch('on-after-validate', _this2);
+                });
             } else {
                 this.dispatch('on-skip-validate', { viewModel: this });
             }

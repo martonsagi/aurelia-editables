@@ -35,6 +35,7 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
             _classCallCheck(this, RecordManager);
 
             this.isValid = false;
+            this.isDirty = false;
             this.queryModel = { filters: [] };
             this.validationFields = [];
             this._template = template;
@@ -50,38 +51,44 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
         };
 
         RecordManager.prototype.load = function load(data) {
-            this.setOriginal(data);
-            for (var _iterator = data, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-                var _ref;
+            var _this = this;
 
-                if (_isArray) {
-                    if (_i >= _iterator.length) break;
-                    _ref = _iterator[_i++];
-                } else {
-                    _i = _iterator.next();
-                    if (_i.done) break;
-                    _ref = _i.value;
+            return new Promise(function (resolve, reject) {
+                _this.setOriginal(data);
+                for (var _iterator = data, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
+                    var _ref;
+
+                    if (_isArray) {
+                        if (_i >= _iterator.length) break;
+                        _ref = _iterator[_i++];
+                    } else {
+                        _i = _iterator.next();
+                        if (_i.done) break;
+                        _ref = _i.value;
+                    }
+
+                    var row = _ref;
+
+                    var record = new _record.Record(row);
+                    record.setRecordManager(_this);
+                    _this.records.push(record);
                 }
-
-                var row = _ref;
-
-                var record = new _record.Record(row);
-                record.setRecordManager(this);
-                this.records.push(record);
-            }
+                _this.isDirty = false;
+                resolve();
+            });
         };
 
         RecordManager.prototype.add = function add() {
-            var _this = this;
+            var _this2 = this;
 
             var templateData = JSON.parse(JSON.stringify(this._template));
             var newRow = new _record.Record(templateData, _record.RecordState.added);
             newRow.setRecordManager(this);
             return newRow.setValidationFields(this.validationFields).then(function () {
-                _this.isValid = false;
-                _this.records.unshift(newRow);
-                _this.current(_this.records[0]);
-                for (var _iterator2 = _this.queryModel.filters, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+                _this2.isValid = false;
+                _this2.records.unshift(newRow);
+                _this2.current(_this2.records[0]);
+                for (var _iterator2 = _this2.queryModel.filters, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
                     var _ref2;
 
                     if (_isArray2) {
@@ -95,21 +102,22 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
 
                     var filter = _ref2;
 
-                    _this.currentRecord[filter.field] = filter.value;
+                    _this2.currentRecord[filter.field] = filter.value;
                 }
-                _this.validate();
+                _this2.validate();
             });
         };
 
         RecordManager.prototype.edit = function edit(toggle) {
-            var _this2 = this;
+            var _this3 = this;
 
             if (this.currentRecord) {
                 this.currentRecord.editMode = toggle;
                 return new Promise(function (resolve, reject) {
                     if (toggle === true) {
-                        _this2.currentRecord.setValidationFields(_this2.validationFields).then(function () {
-                            _this2.currentRecord.validate();
+                        _this3.currentRecord.setValidationFields(_this3.validationFields).then(function () {
+                            return _this3.currentRecord.validate();
+                        }).then(function () {
                             resolve();
                         });
                     } else {
@@ -208,35 +216,35 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
             this.originalRecords = this.setOriginal(originalRows);
         };
 
-        RecordManager.prototype.dirty = function dirty() {
-            for (var _iterator7 = this.records, _isArray7 = Array.isArray(_iterator7), _i7 = 0, _iterator7 = _isArray7 ? _iterator7 : _iterator7[Symbol.iterator]();;) {
-                var _ref7;
-
-                if (_isArray7) {
-                    if (_i7 >= _iterator7.length) break;
-                    _ref7 = _iterator7[_i7++];
-                } else {
-                    _i7 = _iterator7.next();
-                    if (_i7.done) break;
-                    _ref7 = _i7.value;
-                }
-
-                var item = _ref7;
-
-                if (item.state !== _record.RecordState.unchanged) {
-                    return true;
-                }
-            }
-            return false;
-        };
-
         RecordManager.prototype.cancel = function cancel() {
-            var changes = this.getChanges();
-            if (changes.dirty === false) {
+            if (this.isDirty === false) {
                 return false;
             }
+            var changes = this.getChanges();
             if (changes.added.length > 0) {
-                for (var _iterator8 = changes.added, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
+                for (var _iterator7 = changes.added, _isArray7 = Array.isArray(_iterator7), _i7 = 0, _iterator7 = _isArray7 ? _iterator7 : _iterator7[Symbol.iterator]();;) {
+                    var _ref7;
+
+                    if (_isArray7) {
+                        if (_i7 >= _iterator7.length) break;
+                        _ref7 = _iterator7[_i7++];
+                    } else {
+                        _i7 = _iterator7.next();
+                        if (_i7.done) break;
+                        _ref7 = _i7.value;
+                    }
+
+                    var row = _ref7;
+
+                    var index = this.records.indexOf(row);
+                    this.records[index].dispose();
+                    this.records.splice(index, 1);
+                }
+            }
+            if (changes.deleted.length > 0 || changes.modified.length > 0) {
+                var rows = changes.modified.concat(changes.deleted);
+                var originalRows = JSON.parse(JSON.stringify(this.originalRecords));
+                for (var _iterator8 = rows, _isArray8 = Array.isArray(_iterator8), _i8 = 0, _iterator8 = _isArray8 ? _iterator8 : _iterator8[Symbol.iterator]();;) {
                     var _ref8;
 
                     if (_isArray8) {
@@ -248,29 +256,7 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
                         _ref8 = _i8.value;
                     }
 
-                    var row = _ref8;
-
-                    var index = this.records.indexOf(row);
-                    this.records[index].dispose();
-                    this.records.splice(index, 1);
-                }
-            }
-            if (changes.deleted.length > 0 || changes.modified.length > 0) {
-                var rows = changes.modified.concat(changes.deleted);
-                var originalRows = JSON.parse(JSON.stringify(this.originalRecords));
-                for (var _iterator9 = rows, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
-                    var _ref9;
-
-                    if (_isArray9) {
-                        if (_i9 >= _iterator9.length) break;
-                        _ref9 = _iterator9[_i9++];
-                    } else {
-                        _i9 = _iterator9.next();
-                        if (_i9.done) break;
-                        _ref9 = _i9.value;
-                    }
-
-                    var _row3 = _ref9;
+                    var _row3 = _ref8;
 
                     var _index = this.records.indexOf(_row3);
                     this.records[_index].dispose();
@@ -284,6 +270,7 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
             } else {
                 this.currentRecord = {};
             }
+            this.isDirty = false;
         };
 
         RecordManager.prototype.setOriginal = function setOriginal(data) {
@@ -298,19 +285,19 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
             var modified = [],
                 added = [],
                 deleted = [];
-            for (var _iterator10 = this.records, _isArray10 = Array.isArray(_iterator10), _i10 = 0, _iterator10 = _isArray10 ? _iterator10 : _iterator10[Symbol.iterator]();;) {
-                var _ref10;
+            for (var _iterator9 = this.records, _isArray9 = Array.isArray(_iterator9), _i9 = 0, _iterator9 = _isArray9 ? _iterator9 : _iterator9[Symbol.iterator]();;) {
+                var _ref9;
 
-                if (_isArray10) {
-                    if (_i10 >= _iterator10.length) break;
-                    _ref10 = _iterator10[_i10++];
+                if (_isArray9) {
+                    if (_i9 >= _iterator9.length) break;
+                    _ref9 = _iterator9[_i9++];
                 } else {
-                    _i10 = _iterator10.next();
-                    if (_i10.done) break;
-                    _ref10 = _i10.value;
+                    _i9 = _iterator9.next();
+                    if (_i9.done) break;
+                    _ref9 = _i9.value;
                 }
 
-                var item = _ref10;
+                var item = _ref9;
 
                 if (item.state === _record.RecordState.modified) {
                     modified.push(item);
@@ -335,14 +322,31 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
         };
 
         RecordManager.prototype.validate = function validate() {
-            this.isValid = false;
-            if (this.dirty() === false) {
+            var isValid = null;
+            if (this.isDirty === false) {
+                this.isValid = false;
                 return;
             }
-            var rows = this.records.filter(function (item) {
-                return (item.state === _record.RecordState.added || item.state === _record.RecordState.modified) && item.isValid === false;
-            });
-            this.isValid = rows.length === 0;
+            for (var _iterator10 = this.records, _isArray10 = Array.isArray(_iterator10), _i10 = 0, _iterator10 = _isArray10 ? _iterator10 : _iterator10[Symbol.iterator]();;) {
+                var _ref10;
+
+                if (_isArray10) {
+                    if (_i10 >= _iterator10.length) break;
+                    _ref10 = _iterator10[_i10++];
+                } else {
+                    _i10 = _iterator10.next();
+                    if (_i10.done) break;
+                    _ref10 = _i10.value;
+                }
+
+                var item = _ref10;
+
+                if ((item.state === _record.RecordState.added || item.state === _record.RecordState.modified) && item.isValid === false) {
+                    isValid = false;
+                    break;
+                }
+            }
+            this.isValid = isValid === null;
         };
 
         RecordManager.prototype.dispose = function dispose() {
@@ -374,4 +378,5 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
 
     __decorate([_aureliaFramework.observable, __metadata('design:type', Object)], RecordManager.prototype, "currentRecord", void 0);
     __decorate([(0, _aureliaFramework.observable)(), __metadata('design:type', Boolean)], RecordManager.prototype, "isValid", void 0);
+    __decorate([(0, _aureliaFramework.observable)(), __metadata('design:type', Boolean)], RecordManager.prototype, "isDirty", void 0);
 });

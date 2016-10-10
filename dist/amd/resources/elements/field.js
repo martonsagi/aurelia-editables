@@ -1,4 +1,4 @@
-define(["exports", "aurelia-framework", "aurelia-validation", "../../record", "../../config"], function (exports, _aureliaFramework, _aureliaValidation, _record, _config) {
+define(["exports", "aurelia-framework", "aurelia-validation", "../../record", "../../config", "aurelia-binding"], function (exports, _aureliaFramework, _aureliaValidation, _record, _config, _aureliaBinding) {
     "use strict";
 
     Object.defineProperty(exports, "__esModule", {
@@ -38,7 +38,7 @@ define(["exports", "aurelia-framework", "aurelia-validation", "../../record", ".
             this.withLabel = true;
             this.integratedMode = false;
             this.validationMode = _aureliaValidation.validateTrigger.change;
-            this.isValid = false;
+            this.isValid = null;
             this.init = 0;
             this.controller = controller;
             this.controller.validateTrigger = _aureliaValidation.validateTrigger.manual;
@@ -74,14 +74,10 @@ define(["exports", "aurelia-framework", "aurelia-validation", "../../record", ".
         Field.prototype.setValidation = function setValidation() {
             if (this.options.validation) {
                 if (this.options.validationMode) this.validationMode = this.options.validationMode;
-                var props = Object.getOwnPropertyNames(this.options.validation).filter(function (prop) {
-                    return prop !== '__observers__';
-                });
+                var props = Object.getOwnPropertyNames(this.options.validation);
                 if (props.length > 0) {
                     var validator = _aureliaValidation.ValidationRules;
                     for (var _iterator = props, _isArray = Array.isArray(_iterator), _i = 0, _iterator = _isArray ? _iterator : _iterator[Symbol.iterator]();;) {
-                        var _validator$ensure$dis;
-
                         var _ref;
 
                         if (_isArray) {
@@ -95,9 +91,13 @@ define(["exports", "aurelia-framework", "aurelia-validation", "../../record", ".
 
                         var key = _ref;
 
-                        var ruleConfig = this.options.validation[key],
-                            ruleName = key;
-                        validator = (_validator$ensure$dis = validator.ensure('fieldValue').displayName(this.options.title || this.options.name)).satisfiesRule.apply(_validator$ensure$dis, [ruleName].concat(ruleConfig)).on(this);
+                        if (key !== '__observers__') {
+                            var _validator$ensure$dis;
+
+                            var ruleConfig = this.options.validation[key],
+                                ruleName = key;
+                            validator = (_validator$ensure$dis = validator.ensure('fieldValue').displayName(this.options.title || this.options.name)).satisfiesRule.apply(_validator$ensure$dis, [ruleName].concat(ruleConfig)).on(this);
+                        }
                     }
                     this.validator = validator;
                 }
@@ -110,16 +110,17 @@ define(["exports", "aurelia-framework", "aurelia-validation", "../../record", ".
             this.dispatch('on-before-validate', { viewModel: this });
             this.controller.validate().then(function (errors) {
                 _this2.errors = errors;
-                _this2.isValid = _this2.errors.length === 0;
-                if (_this2.record && _this2.record.setValidationStatus) {
-                    _this2.record.setValidationStatus(_this2.options.name, _this2.isValid === true ? _record.RecordValidationState.valid : _record.RecordValidationState.invalid);
-                    _this2.record.validate();
+                var isValid = _this2.errors.length === 0;
+                if (_this2.isValid !== isValid && _this2.options && _this2.record && _this2.record.setValidationStatus) {
+                    _this2.isValid = isValid;
+                    _this2.record.setValidationStatus(_this2.options.name, _this2.isValid === true ? _record.RecordValidationState.valid : _record.RecordValidationState.invalid).then(function () {
+                        _this2.dispatch('on-after-validate', { viewModel: _this2 });
+                    });
                 }
-                _this2.dispatch('on-after-validate', { viewModel: _this2 });
             });
         };
 
-        Field.prototype.fieldValueChanged = function fieldValueChanged() {
+        Field.prototype.fieldValueChanged = function fieldValueChanged(newVal, oldVal) {
             if (this.editMode === true) {
                 this.validate();
             }
@@ -128,7 +129,6 @@ define(["exports", "aurelia-framework", "aurelia-validation", "../../record", ".
         };
 
         Field.prototype.blur = function blur() {
-            this.validate();
             this.dispatch('on-blur', { viewModel: this });
         };
 
@@ -203,5 +203,6 @@ define(["exports", "aurelia-framework", "aurelia-validation", "../../record", ".
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], Field.prototype, "editMode", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], Field.prototype, "withLabel", void 0);
     __decorate([_aureliaFramework.bindable, __metadata('design:type', Boolean)], Field.prototype, "integratedMode", void 0);
+    __decorate([(0, _aureliaBinding.observable)(), __metadata('design:type', Object)], Field.prototype, "isValid", void 0);
     exports.Field = Field = __decorate([(0, _aureliaFramework.inject)(_aureliaFramework.NewInstance.of(_aureliaValidation.ValidationController), Element, _config.Config, _aureliaFramework.BindingEngine), __metadata('design:paramtypes', [_aureliaValidation.ValidationController, Element, _config.Config, _aureliaFramework.BindingEngine])], Field);
 });

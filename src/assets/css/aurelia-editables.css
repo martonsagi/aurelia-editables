@@ -28,6 +28,10 @@
 .data-grid .form-control {
   font-size: 14px !important;
 }
+.data-grid td,
+.data-grid th {
+  transition: width ease 0.1s;
+}
 .data-grid td .boolean-content,
 .data-grid th .boolean-content {
   text-align: center;

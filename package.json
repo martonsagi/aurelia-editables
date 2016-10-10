@@ -1,6 +1,6 @@
 {
     "name": "aurelia-editables",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "author": "Marton Sagi <hello@martonsagi.me>",
     "description": "Configuration-based data editor (Datagrid and Forms) plugin for Aurelia (http://aurelia.io/) ",
     "homepage": "https://github.com/martonsagi/aurelia-editables",

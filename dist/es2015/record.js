@@ -31,10 +31,6 @@ export let Record = class Record {
         return new Promise((resolve, reject) => {
             if (this.isValidationActivated === true) return;
             this.validationFields = fieldNames;
-            for (let name of fieldNames) {
-                this.validationStatus[name] = RecordValidationState.invalid;
-                this.subscriptions.push(this.bindingEngine.propertyObserver(this.validationStatus, name).subscribe(this.onValidationFieldsChange.bind(this)));
-            }
             let props = Object.getOwnPropertyNames(this._data);
             for (let prop of props) {
                 switch (prop) {
@@ -51,31 +47,44 @@ export let Record = class Record {
         });
     }
     onValidationFieldsChange(newValue, oldValue) {
-        this.validate();
+        this.validate().then(() => {});
     }
     setValidationStatus(field, state) {
-        this.validationStatus[field] = state;
+        return new Promise((resolve, reject) => {
+            this.validationStatus[field] = state;
+            this.validate().then(() => {
+                resolve();
+            });
+        });
     }
     validate() {
         return new Promise((resolve, reject) => {
+            let isValid = null;
             if (this.validationFields.length === 0) {
                 resolve();
             }
-            this.isValid = true;
             for (let field of this.validationFields) {
                 if (this.validationStatus[field] !== RecordValidationState.valid) {
-                    this.isValid = false;
+                    isValid = false;
+                    break;
                 }
             }
+            this.isValid = isValid === null;
             resolve();
         });
     }
     onChange() {
         if (this.init === true && this.state === RecordState.unchanged) {
             this.state = RecordState.modified;
+            if (this.recordManager) {
+                this.recordManager.validate();
+                if (this.recordManager.isDirty === false) {
+                    this.recordManager.isDirty = true;
+                }
+            }
         }
     }
-    isValidChanged() {
+    isValidChanged(newVal, oldVal) {
         if (this.recordManager) {
             this.recordManager.validate();
         }

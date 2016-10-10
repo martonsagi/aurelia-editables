@@ -12,6 +12,9 @@ export class RecordManager implements Disposable {
     @observable()
     isValid: boolean = false;
 
+    @observable()
+    isDirty: boolean = false;
+
     records: Array<Record>;
     queryModel: QueryModel = { filters: []  };
     originalRecords: any;
@@ -33,13 +36,18 @@ export class RecordManager implements Disposable {
     }
 
     load(data) {
-        this.setOriginal(data);
+        return new Promise((resolve, reject) => {
+            this.setOriginal(data);
 
-        for (let row of data) {
-            let record = new Record(row);
-            record.setRecordManager(this);
-            this.records.push(record);
-        }
+            for (let row of data) {
+                let record = new Record(row);
+                record.setRecordManager(this);
+                this.records.push(record);
+            }
+
+            this.isDirty = false;
+            resolve();
+        });
     }
 
     add() {
@@ -73,8 +81,8 @@ export class RecordManager implements Disposable {
                     // initialize record validation when it goes into edit mode
                     this.currentRecord
                         .setValidationFields(this.validationFields)
+                        .then(() => this.currentRecord.validate())
                         .then(() => {
-                            this.currentRecord.validate();
                             resolve();
                         });
 
@@ -129,22 +137,12 @@ export class RecordManager implements Disposable {
         this.originalRecords = this.setOriginal(originalRows);
     }
 
-    dirty() {
-        for (let item of this.records) {
-            if (item.state !== RecordState.unchanged) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     cancel() {
-        let changes = this.getChanges();
-
-        if (changes.dirty === false) {
+        if (this.isDirty === false) {
             return false;
         }
+
+        let changes = this.getChanges();
 
         // removing newly added records, so array indexes should be restored
         if (changes.added.length > 0) {
@@ -178,6 +176,8 @@ export class RecordManager implements Disposable {
         } else {
             this.currentRecord = (<any>{});
         }
+
+        this.isDirty = false;
     }
 
     setOriginal(data) {
@@ -220,19 +220,22 @@ export class RecordManager implements Disposable {
     }
 
     validate() {
-        this.isValid = false;
+        let isValid = null;
 
-        if (this.dirty() === false) {
+        if (this.isDirty === false) {
+            this.isValid = false;
             return;
         }
 
-        let rows = this.records.filter(item =>
-            (item.state === RecordState.added || item.state === RecordState.modified)
-            &&
-            item.isValid === false
-        );
+        for (let item of this.records) {
+            if ((item.state === RecordState.added || item.state === RecordState.modified)
+                && item.isValid === false) {
+                isValid = false;
+                break;
+            }
+        }
 
-        this.isValid = rows.length === 0;
+        this.isValid = isValid === null;
     }
 
     dispose(): void {

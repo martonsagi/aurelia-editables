@@ -11,9 +11,9 @@ var __metadata = this && this.__metadata || function (k, v) {
 import { bindable, autoinject, Container } from 'aurelia-framework';
 import { Config } from '../../config';
 import { Api } from '../../api';
-import { RecordState } from '../../record';
 import { RecordManager } from '../../record-manager';
 import { DeepObserver } from '../../deep-observer';
+import { observable } from "aurelia-binding";
 export let DataGrid = class DataGrid {
     constructor(element, deepObserver) {
         this.parentRecord = null;
@@ -25,6 +25,7 @@ export let DataGrid = class DataGrid {
         this.showToolbar = true;
         this.showHeader = true;
         this.filterVisible = false;
+        this.firstInit = true;
         this.queryModel = { filters: [] };
         this.columnFilters = null;
         this.sortSettings = null;
@@ -40,7 +41,6 @@ export let DataGrid = class DataGrid {
     get toolbarTemplateOption() {
         return this.options.toolbarTemplate || this.toolbarTemplate || './data-grid-toolbar';
     }
-    created() {}
     bind(bindingContext) {
         this.dispatch('on-bind', { viewModel: this, context: bindingContext });
         this.recordManager = new RecordManager();
@@ -56,6 +56,11 @@ export let DataGrid = class DataGrid {
         this.editMode = false;
         this.deepObserverDisposer();
         this.recordManagerDisposer();
+    }
+    recordManagerDisposer() {
+        if (this.recordManager.records && this.recordManager.records.length > 0) {
+            this.recordManager.dispose();
+        }
     }
     init(canLoad) {
         this.dispatch('on-init', { viewModel: this });
@@ -104,10 +109,13 @@ export let DataGrid = class DataGrid {
             t.recordManager = new RecordManager(t.entity);
             t.recordManager.queryModel = t.queryModel;
             t.recordManager.setValidationFields(t.validationFields);
-            t.recordManager.load(result.data);
+            return t.recordManager.load(result.data);
+        }).then(() => {
             t.select(t.recordManager.records[0]);
+            t.updateColumnWidth(t.firstInit);
             t.loading = false;
-            this.dispatch('on-after-load', { viewModel: t });
+            t.firstInit = false;
+            t.dispatch('on-after-load', { viewModel: t });
         });
     }
     setLoader() {
@@ -123,7 +131,9 @@ export let DataGrid = class DataGrid {
     loadColumns() {
         let t = this;
         return new Promise(function (resolve, reject) {
-            let tasks = [];
+            let tasks = [],
+                columnTotalWidth = 0,
+                dynamicColumns = [];
             for (let column of t.options.columns) {
                 let editorSettings = column.editor;
                 let callApi = editorSettings && "api" in editorSettings && editorSettings.api !== null && editorSettings.api.length > 0;
@@ -150,9 +160,26 @@ export let DataGrid = class DataGrid {
         let fields = this.options.columns.filter(col => col.validation).map(col => col.name);
         this.validationFields = fields;
     }
-    recordManagerDisposer() {
-        if (this.recordManager.records && this.recordManager.records.length > 0) {
-            this.recordManager.dispose();
+    updateColumnWidth(resize = false) {
+        let columnTotalWidth = 0,
+            dynamicColumns = [],
+            bodyWidth = this.tableBodyScroll.getBoundingClientRect().width,
+            rowActions = this.tableHeaderScroll.querySelector('.row-actions'),
+            rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
+        for (let column of this.options.columns) {
+            if (column.width > 0 && resize === false) {
+                columnTotalWidth += column.width;
+            } else {
+                dynamicColumns.push(column);
+            }
+        }
+        if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
+            let divider = dynamicColumns.length,
+                proposedWidth = Math.floor((bodyWidth - columnTotalWidth - rowActionsWidth - 18) / divider);
+            proposedWidth = proposedWidth < 150 ? 150 : proposedWidth - 16;
+            for (let dynamicCol of dynamicColumns) {
+                dynamicCol.width = proposedWidth;
+            }
         }
     }
     refresh() {
@@ -228,7 +255,6 @@ export let DataGrid = class DataGrid {
             rec.editMode = this.editMode || this.formMode;
         }
         this.recordManager.current(rec);
-        this.validate();
         this.dispatch('on-select', { viewModel: this });
         return true;
     }
@@ -277,7 +303,7 @@ export let DataGrid = class DataGrid {
     }
     save() {
         let t = this,
-            changes = t.getChanges();
+            changes = this.recordManager.getChanges();
         this.dispatch('on-before-save', { viewModel: this, changes: changes });
         let tasks = [];
         if (changes.added.length > 0) {
@@ -309,13 +335,13 @@ export let DataGrid = class DataGrid {
         });
     }
     cancel(showConfirm) {
-        let isDirty = this.recordManager.dirty();
+        let isDirty = this.recordManager.isDirty;
         if (showConfirm === true && isDirty === true) {
             if (!confirm('You have unsaved changes. Are you sure you wish to leave?')) {
                 return false;
             }
         }
-        let changes = this.getChanges();
+        let changes = this.recordManager.getChanges();
         this.dispatch('on-before-cancel', { viewModel: this, changes: changes });
         if (isDirty === true) this.recordManager.cancel();
         this.editMode = false;
@@ -328,23 +354,6 @@ export let DataGrid = class DataGrid {
     }
     onRecordsChange(splice) {
         this.dispatch('on-records-changed', { viewModel: this, changes: splice });
-    }
-    getChanges() {
-        let modified = this.recordManager.records.filter(item => {
-            return item.state === RecordState.modified;
-        });
-        let added = this.recordManager.records.filter(item => {
-            return item.state === RecordState.added;
-        });
-        let deleted = this.recordManager.records.filter(item => {
-            return item.state === RecordState.deleted;
-        });
-        return {
-            added: added,
-            modified: modified,
-            deleted: deleted,
-            dirty: added.length > 0 || modified.length > 0 || deleted.length > 0
-        };
     }
     validate() {
         this.dispatch('on-before-validate', { viewModel: this });
@@ -383,6 +392,11 @@ export let DataGrid = class DataGrid {
             property: property
         });
     }
+    editModeChanged() {
+        if (this.editMode === true && this.formMode !== true) {
+            setTimeout(() => this.validate(), 100);
+        }
+    }
     onScroll(event) {
         this.tableHeaderScroll.scrollLeft = event.target.scrollLeft;
     }
@@ -406,4 +420,5 @@ __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
 __decorate([bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);
+__decorate([observable(), __metadata('design:type', Boolean)], DataGrid.prototype, "loading", void 0);
 DataGrid = __decorate([autoinject, __metadata('design:paramtypes', [Element, DeepObserver])], DataGrid);
