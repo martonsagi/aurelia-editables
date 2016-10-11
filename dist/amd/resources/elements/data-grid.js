@@ -482,15 +482,14 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
                     return false;
                 }
             }
-            var changes = this.recordManager.getChanges();
-            this.dispatch('on-before-cancel', { viewModel: this, changes: changes });
-            if (isDirty === true) this.recordManager.cancel();
+            this.dispatch('on-before-cancel', { viewModel: this });
             this.editMode = false;
+            this.formMode = false;
             if (this.recordManager.currentRecord) {
                 this.recordManager.currentRecord.editMode = false;
                 this.select(this.recordManager.currentRecord);
             }
-            this.formMode = false;
+            if (isDirty === true) this.recordManager.cancel();
             this.dispatch('on-after-cancel', { viewModel: this });
         };
 
@@ -520,16 +519,10 @@ define(["exports", "aurelia-framework", "../../config", "../../api", "../../reco
         DataGrid.prototype.resizeColumn = function resizeColumn(customEvent, column) {
             var event = customEvent.detail,
                 target = event.target,
-                x = parseFloat(target.getAttribute('data-x')) || 0,
-                y = parseFloat(target.getAttribute('data-y')) || 0,
                 data = target.dataset;
             if (column.resizing === false) return;
             if (event.rect.width < 100) return;
             column.width = event.rect.width - 16;
-            x += event.deltaRect.left;
-            y += event.deltaRect.top;
-            target.setAttribute('data-x', x);
-            target.setAttribute('data-y', y);
         };
 
         DataGrid.prototype.optionsChanged = function optionsChanged(newValue, oldValue, property) {
