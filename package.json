@@ -21,6 +21,9 @@
         "type": "git",
         "url": "https://github.com/martonsagi/aurelia-editables"
     },
+    "scripts": {
+        "postinstall": "node ./install/post-install.js"
+    },
     "dependencies": {
         "interact.js": "^1.2.6",
         "font-awesome": "^4.6.3",

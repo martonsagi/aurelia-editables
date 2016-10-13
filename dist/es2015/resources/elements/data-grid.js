@@ -24,12 +24,14 @@ export let DataGrid = class DataGrid {
         this.canLoad = false;
         this.showToolbar = true;
         this.showHeader = true;
+        this.showPager = true;
         this.filterVisible = false;
         this.firstInit = true;
         this.queryModel = { filters: [] };
         this.columnFilters = null;
         this.sortSettings = null;
         this.pageSettings = { current: 1, size: 10 };
+        this.scrollBarWidth = 18;
         this.element = element;
         this.deepObserver = deepObserver;
         this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
@@ -112,7 +114,8 @@ export let DataGrid = class DataGrid {
             return t.recordManager.load(result.data);
         }).then(() => {
             t.select(t.recordManager.records[0]);
-            t.updateColumnWidth(t.firstInit);
+            return t.updateColumnWidth(t.firstInit);
+        }).then(() => {
             t.loading = false;
             t.firstInit = false;
             t.dispatch('on-after-load', { viewModel: t });
@@ -161,26 +164,30 @@ export let DataGrid = class DataGrid {
         this.validationFields = fields;
     }
     updateColumnWidth(resize = false) {
-        let columnTotalWidth = 0,
-            dynamicColumns = [],
-            bodyWidth = this.tableBodyScroll.getBoundingClientRect().width,
-            rowActions = this.tableHeaderScroll.querySelector('.row-actions'),
-            rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
-        for (let column of this.options.columns) {
-            if (column.width > 0 && resize === false) {
-                columnTotalWidth += column.width;
-            } else {
-                dynamicColumns.push(column);
+        return new Promise(((resolve, reject) => {
+            let columnTotalWidth = 0,
+                dynamicColumns = [],
+                bodyWidth = this.tableBodyScroll.getBoundingClientRect().width,
+                rowActions = this.tableHeaderScroll.querySelector('.row-actions'),
+                rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
+            for (let column of this.options.columns) {
+                if (column.width > 0 && resize === false) {
+                    columnTotalWidth += column.width;
+                } else {
+                    dynamicColumns.push(column);
+                }
             }
-        }
-        if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
-            let divider = dynamicColumns.length,
-                proposedWidth = Math.floor((bodyWidth - columnTotalWidth - rowActionsWidth - 18) / divider);
-            proposedWidth = proposedWidth < 150 ? 150 : proposedWidth - 16;
-            for (let dynamicCol of dynamicColumns) {
-                dynamicCol.width = proposedWidth;
+            if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
+                let divider = dynamicColumns.length,
+                    columnsTotalWidth = bodyWidth - columnTotalWidth - rowActionsWidth - this.scrollBarWidth,
+                    proposedWidth = Math.floor(columnsTotalWidth / divider);
+                proposedWidth = proposedWidth < 150 ? 150 : proposedWidth - 16;
+                for (let dynamicCol of dynamicColumns) {
+                    dynamicCol.width = proposedWidth;
+                }
             }
-        }
+            resolve();
+        }).bind(this));
     }
     refresh() {
         this.dispatch('on-refresh', { viewModel: this });
@@ -410,6 +417,7 @@ __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showHeader", void 0);
+__decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showPager", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
 __decorate([bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);

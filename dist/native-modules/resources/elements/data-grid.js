@@ -33,12 +33,14 @@ export var DataGrid = function () {
         this.canLoad = false;
         this.showToolbar = true;
         this.showHeader = true;
+        this.showPager = true;
         this.filterVisible = false;
         this.firstInit = true;
         this.queryModel = { filters: [] };
         this.columnFilters = null;
         this.sortSettings = null;
         this.pageSettings = { current: 1, size: 10 };
+        this.scrollBarWidth = 18;
         this.element = element;
         this.deepObserver = deepObserver;
         this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
@@ -129,7 +131,8 @@ export var DataGrid = function () {
             return t.recordManager.load(result.data);
         }).then(function () {
             t.select(t.recordManager.records[0]);
-            t.updateColumnWidth(t.firstInit);
+            return t.updateColumnWidth(t.firstInit);
+        }).then(function () {
             t.loading = false;
             t.firstInit = false;
             t.dispatch('on-after-load', { viewModel: t });
@@ -208,58 +211,64 @@ export var DataGrid = function () {
     };
 
     DataGrid.prototype.updateColumnWidth = function updateColumnWidth() {
+        var _this3 = this;
+
         var resize = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
 
-        var columnTotalWidth = 0,
-            dynamicColumns = [],
-            bodyWidth = this.tableBodyScroll.getBoundingClientRect().width,
-            rowActions = this.tableHeaderScroll.querySelector('.row-actions'),
-            rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
-        for (var _iterator2 = this.options.columns, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
-            var _ref2;
+        return new Promise(function (resolve, reject) {
+            var columnTotalWidth = 0,
+                dynamicColumns = [],
+                bodyWidth = _this3.tableBodyScroll.getBoundingClientRect().width,
+                rowActions = _this3.tableHeaderScroll.querySelector('.row-actions'),
+                rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
+            for (var _iterator2 = _this3.options.columns, _isArray2 = Array.isArray(_iterator2), _i2 = 0, _iterator2 = _isArray2 ? _iterator2 : _iterator2[Symbol.iterator]();;) {
+                var _ref2;
 
-            if (_isArray2) {
-                if (_i2 >= _iterator2.length) break;
-                _ref2 = _iterator2[_i2++];
-            } else {
-                _i2 = _iterator2.next();
-                if (_i2.done) break;
-                _ref2 = _i2.value;
-            }
-
-            var _column = _ref2;
-
-            if (_column.width > 0 && resize === false) {
-                columnTotalWidth += _column.width;
-            } else {
-                dynamicColumns.push(_column);
-            }
-        }
-        if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
-            var divider = dynamicColumns.length,
-                proposedWidth = Math.floor((bodyWidth - columnTotalWidth - rowActionsWidth - 18) / divider);
-            proposedWidth = proposedWidth < 150 ? 150 : proposedWidth - 16;
-            for (var _iterator3 = dynamicColumns, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
-                var _ref3;
-
-                if (_isArray3) {
-                    if (_i3 >= _iterator3.length) break;
-                    _ref3 = _iterator3[_i3++];
+                if (_isArray2) {
+                    if (_i2 >= _iterator2.length) break;
+                    _ref2 = _iterator2[_i2++];
                 } else {
-                    _i3 = _iterator3.next();
-                    if (_i3.done) break;
-                    _ref3 = _i3.value;
+                    _i2 = _iterator2.next();
+                    if (_i2.done) break;
+                    _ref2 = _i2.value;
                 }
 
-                var dynamicCol = _ref3;
+                var _column = _ref2;
 
-                dynamicCol.width = proposedWidth;
+                if (_column.width > 0 && resize === false) {
+                    columnTotalWidth += _column.width;
+                } else {
+                    dynamicColumns.push(_column);
+                }
             }
-        }
+            if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
+                var divider = dynamicColumns.length,
+                    columnsTotalWidth = bodyWidth - columnTotalWidth - rowActionsWidth - _this3.scrollBarWidth,
+                    proposedWidth = Math.floor(columnsTotalWidth / divider);
+                proposedWidth = proposedWidth < 150 ? 150 : proposedWidth - 16;
+                for (var _iterator3 = dynamicColumns, _isArray3 = Array.isArray(_iterator3), _i3 = 0, _iterator3 = _isArray3 ? _iterator3 : _iterator3[Symbol.iterator]();;) {
+                    var _ref3;
+
+                    if (_isArray3) {
+                        if (_i3 >= _iterator3.length) break;
+                        _ref3 = _iterator3[_i3++];
+                    } else {
+                        _i3 = _iterator3.next();
+                        if (_i3.done) break;
+                        _ref3 = _i3.value;
+                    }
+
+                    var dynamicCol = _ref3;
+
+                    dynamicCol.width = proposedWidth;
+                }
+            }
+            resolve();
+        }.bind(this));
     };
 
     DataGrid.prototype.refresh = function refresh() {
-        var _this3 = this;
+        var _this4 = this;
 
         this.dispatch('on-refresh', { viewModel: this });
         if (this.cancel(true) === false) {
@@ -268,7 +277,7 @@ export var DataGrid = function () {
         var refreshColumns = this.options.refreshColumns || false;
         if (refreshColumns) {
             this.loadColumns().then(function () {
-                _this3.load();
+                _this4.load();
             });
         } else {
             this.load();
@@ -366,26 +375,26 @@ export var DataGrid = function () {
     };
 
     DataGrid.prototype.add = function add() {
-        var _this4 = this;
+        var _this5 = this;
 
         this.editMode = true;
         this.formMode = this.formMode !== true ? this.showFormOnCreate === true : this.formMode;
         this.tableBodyScroll.scrollTop = 0;
         this.recordManager.add().then(function () {
-            _this4.select(_this4.recordManager.currentRecord);
-            _this4.dispatch('on-record-add', { viewModel: _this4 });
+            _this5.select(_this5.recordManager.currentRecord);
+            _this5.dispatch('on-record-add', { viewModel: _this5 });
         });
     };
 
     DataGrid.prototype.edit = function edit() {
-        var _this5 = this;
+        var _this6 = this;
 
         this.editMode = !this.editMode;
         this.recordManager.edit(this.editMode).then(function () {
-            if (_this5.editMode === true) {
-                _this5.dispatch('on-record-edit-begin', { viewModel: _this5 });
+            if (_this6.editMode === true) {
+                _this6.dispatch('on-record-edit-begin', { viewModel: _this6 });
             } else {
-                _this5.dispatch('on-record-edit-end', { viewModel: _this5 });
+                _this6.dispatch('on-record-edit-end', { viewModel: _this6 });
             }
         });
     };
@@ -408,7 +417,7 @@ export var DataGrid = function () {
     };
 
     DataGrid.prototype.save = function save() {
-        var _this6 = this;
+        var _this7 = this;
 
         var t = this,
             changes = this.recordManager.getChanges();
@@ -439,13 +448,13 @@ export var DataGrid = function () {
                 t.total += changes.added.length;
             }
             if (changes.deleted.length > 0 || changes.added.length > 0) {
-                _this6.pager.au.controller.viewModel.update();
+                _this7.pager.au.controller.viewModel.update();
             }
-            if (_this6.recordManager.currentRecord) {
-                _this6.recordManager.currentRecord.editMode = false;
+            if (_this7.recordManager.currentRecord) {
+                _this7.recordManager.currentRecord.editMode = false;
             }
-            _this6.editMode = false;
-            _this6.dispatch('on-after-save', { viewModel: _this6 });
+            _this7.editMode = false;
+            _this7.dispatch('on-after-save', { viewModel: _this7 });
         });
     };
 
@@ -509,11 +518,11 @@ export var DataGrid = function () {
     };
 
     DataGrid.prototype.editModeChanged = function editModeChanged() {
-        var _this7 = this;
+        var _this8 = this;
 
         if (this.editMode === true && this.formMode !== true) {
             setTimeout(function () {
-                return _this7.validate();
+                return _this8.validate();
             }, 100);
         }
     };
@@ -548,6 +557,7 @@ __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "canLoad", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showToolbar", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showHeader", void 0);
+__decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showPager", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
 __decorate([bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);

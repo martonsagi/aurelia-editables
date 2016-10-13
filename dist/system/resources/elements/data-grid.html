@@ -160,7 +160,7 @@
         <!-- /Data area -->
 
         <!-- Footer, pager -->
-        <div class="table-footer" show.bind="!formMode">
+        <div if.bind="showPager === true" class="table-footer" show.bind="!formMode">
             <pager class="pull-left"
                    if.bind="options.paging !== false"
                    ref="pager"

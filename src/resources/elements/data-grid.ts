@@ -27,6 +27,7 @@ export class DataGrid {
     @bindable canLoad: boolean = false;
     @bindable showToolbar: boolean = true;
     @bindable showHeader: boolean = true;
+    @bindable showPager: boolean = true;
     @bindable filterVisible: boolean = false;
     @bindable toolbarTemplate: string;
 
@@ -65,6 +66,10 @@ export class DataGrid {
     pluginConfig: Config;
     deepObserver: DeepObserver;
     deepObserverDisposer: any;
+
+    // vertical scrollbar width
+    // TODO: change fixed value to dynamic calculation
+    private scrollBarWidth = 18;
 
     get toolbarTemplateOption() {
         return this.options.toolbarTemplate || this.toolbarTemplate || './data-grid-toolbar';
@@ -192,8 +197,9 @@ export class DataGrid {
             })
             .then(() => {
                 t.select(t.recordManager.records[0]);
-
-                t.updateColumnWidth(t.firstInit);
+                return t.updateColumnWidth(t.firstInit);
+            })
+            .then(() => {
                 t.loading = false;
                 t.firstInit = false;
 
@@ -260,30 +266,35 @@ export class DataGrid {
     }
 
     updateColumnWidth(resize: boolean = false) {
-        let columnTotalWidth = 0,
-            dynamicColumns = [],
-            bodyWidth: any = this.tableBodyScroll.getBoundingClientRect().width,
-            rowActions: any = this.tableHeaderScroll.querySelector('.row-actions'),
-            rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
+        return new Promise(((resolve, reject) => {
+            let columnTotalWidth = 0,
+                dynamicColumns = [],
+                bodyWidth: any = this.tableBodyScroll.getBoundingClientRect().width,
+                rowActions: any = this.tableHeaderScroll.querySelector('.row-actions'),
+                rowActionsWidth = rowActions ? rowActions.getBoundingClientRect().width : 0;
 
-        for (let column of this.options.columns) {
-            if (column.width > 0 && resize === false) {
-                columnTotalWidth += column.width;
-            } else {
-                dynamicColumns.push(column);
+            for (let column of this.options.columns) {
+                if (column.width > 0 && resize === false) {
+                    columnTotalWidth += column.width;
+                } else {
+                    dynamicColumns.push(column);
+                }
             }
-        }
 
-        if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
-            let divider = dynamicColumns.length,
-                proposedWidth = Math.floor((bodyWidth - columnTotalWidth - rowActionsWidth - 18) / divider);
+            if (bodyWidth !== null && columnTotalWidth < bodyWidth && dynamicColumns.length > 0) {
+                let divider = dynamicColumns.length,
+                    columnsTotalWidth = bodyWidth - columnTotalWidth - rowActionsWidth - this.scrollBarWidth,
+                    proposedWidth = Math.floor(columnsTotalWidth / divider);
 
-            proposedWidth = proposedWidth < 150 ? 150 : (proposedWidth - 16);
+                proposedWidth = proposedWidth < 150 ? 150 : (proposedWidth - 16);
 
-            for (let dynamicCol of dynamicColumns) {
-                dynamicCol.width = proposedWidth;
+                for (let dynamicCol of dynamicColumns) {
+                    dynamicCol.width = proposedWidth;
+                }
             }
-        }
+
+            resolve();
+        }).bind(this));
     }
 
     refresh() {
