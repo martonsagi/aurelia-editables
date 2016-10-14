@@ -1,9 +1,19 @@
+/**
+ * Mini cli helper for aurelia-editables plugin
+ * - Configures bundle correctly
+ * - Generates datagrid/form configuration (not implemented yet)
+ *
+ * It's pure ES6 to support Babel/Typescript aurelia-cli projects as well
+ * Uses an empty gulp task to execute below logic within aurelia-cli's infrastructure
+ *
+ * Usage:
+ * au editables [--bunde <custom-bundle-filename>] [--force]
+ */
+
 import * as fs from 'fs-extra';
 import * as project from '../aurelia.json';
 import * as deps from '../../node_modules/aurelia-editables/install/aurelia-editables.deps.json';
 import {CLIOptions} from 'aurelia-cli';
-
-// mini cli library
 
 /**
  * Simple wrapper for built-in CLIOptions
@@ -19,6 +29,22 @@ let getParam = function (name, shortcut) {
 };
 
 /**
+ * Gets all given options in a single array
+ *
+ * @return object
+ */
+let getOptions = function () {
+    let options = {};
+    options.bundle = getParam('bundle', 'b');
+    options.generate = getParam('generate', 'g');
+    options.force = CLIOptions.hasFlag('force', 'f');
+
+    return options;
+};
+
+let cliParams = getOptions();
+
+/**
  * Configure | default action
  * Edit aurelia.json to add preconfigured dependencies for aurelia-editables package
  *
@@ -32,7 +58,7 @@ let configure = function () {
         throw new Error("aurelia.json: bundles section is missing.");
     }
 
-    let bundleName = getParam('bundle', 'b') || 'vendor-bundle.js';
+    let bundleName = cliParams.bundle || 'vendor-bundle.js';
 
     bundle = bundles.find(item => item.name === bundleName);
 
@@ -57,8 +83,8 @@ let configure = function () {
         let name = dep.name || dep,
             check = bundle.dependencies.find(item => (item.name || item) === name);
 
-        if (!check) {
-            console.log(`[NEW] Package '${name}' has been configured.`);
+        if (!check || cliParams.force) {
+            console.log(`[${cliParams.force ? 'MOD' : 'NEW'}] Package '${name}' has been configured.`);
             bundle.dependencies.push(dep);
         } else {
             console.log(`[SKIP] Package '${name}' has already been configured.`);
@@ -88,19 +114,19 @@ let configure = function () {
 /**
  * Generate | generate datagrid json configuration files quickly
  *
+ * @todo implemetation
  * @void
  */
 let generate = function (options) {
     throw new Error("Generate command is not implemented yet.");
 };
 
-
-// execute mini cli
-let generateParam = getParam('generate', 'g');
-
+/**
+ * Execute
+ */
 try {
-    if (generateParam) {
-        generate(generateParam);
+    if (cliParams.generate) {
+        generate(cliParams.generate);
     } else {
         configure();
     }
@@ -108,5 +134,4 @@ try {
     console.log(e);
 }
 
-// an empty gulp task is required to insert our logic into CLI workflow
 export default () => {};

@@ -40,23 +40,6 @@
                 <i class="fa fa-ban"></i> <span class="hidden-xs"> ${'Cancel' | t}</span>
             </button>
 
-            <div if.bind="options.toolbar.download" class="btn-group" title="${'Download' | t}">
-                <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <i class="fa fa-download"></i> <span class="caret"></span>
-                </button>
-                <ul class="dropdown-menu">
-                    <li if.bind="options.toolbar.download.excel">
-                        <a href="#"><i style="margin-right: 5px" class="fa fa-file-excel-o"></i> ${'Excel' | t}</a>
-                    </li>
-                    <li if.bind="options.toolbar.download.word">
-                        <a href="#"><i class="fa fa-file-word-o"></i> ${'Word' | t}</a>
-                    </li>
-                    <li if.bind="options.toolbar.download.pdf">
-                        <a href="#"><i class="fa fa-file-pdf-o"></i> ${'PDF' | t}</a>
-                    </li>
-                </ul>
-            </div>
-            &nbsp;
             <button class="btn btn-default" click.delegate="refresh($event)" title="${'Refresh' | t}">
                 <i class="fa fa-refresh"></i>
             </button>

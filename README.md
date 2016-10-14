@@ -1,107 +1,23 @@
 # aurelia-editables
 
-> Aurelia-editables is a configuration-based data editor plugin for [Aurelia](http://aurelia.io/) with built-in [validation](http://github.com/aurelia/validation) and [localization](http://github.com/aurelia/i18n) support. It provides an easy solution for creating editable datagrids and forms.
+> Aurelia-editables is a configurable data editor plugin for [Aurelia](http://aurelia.io/) with built-in [validation](http://github.com/aurelia/validation) and [localization](http://github.com/aurelia/i18n) support. It provides an easy solution for creating editable datagrids or tables and forms. This project's main goal is to provide configurable, reusable widgets for data manipulation that can make the development of admin applications easier.
 
-With aurelia-editables you can:
+With aurelia-editables you can create:
 
-* create datagrids with remote data, filtering, master-detail connections and many more..., 
-* create standalone or datagrid-integrated forms,
-* or just create standalone input fields
+* datagrids with remote data, filtering, master-detail connections and many more..., 
+* standalone or datagrid-integrated forms,
+* or standalone input fields.
 
-  
+
 ## Demo
-TODO: Showcase and more examples 
+@TODO: Showcase and more examples 
 
-## Main Components:
+## Documentation
+@TODO: Check out the [Github Wiki](https://github.com/martonsagi/aurelia-editables/wiki).
 
-| Name | Tag | Description |
-| ---- | --- | ----------- |
-| DataGrid | `<data-grid>` | Editable DataGrid, generated based on a configuration object |
-| MultiGrid | `<multi-grid>` | Tabbed view generated based on an array of configuration objects |
-| DataForm | `<data-form>` | Editable form, generated based on the same configuration as DataGrids |
-| Field | `<field>` | Basic data editor component |
+## 1. Installation
 
-## Concepts
-Main goal: creating configurable and reusable widgets for data manipulation that can make our life easier while developing admin apps.
-
-Average data editing scenarios can be described in the same abstract way
-
-* **List view**: there is a list or table, which provides a basic view with many records at the same time 
-* **Card view**: from the list view one usually can navigate to a form with editable fields, which provides a detailed view for one record
-* **Input field**: whether it be a table cell or an editable input, it contains an atomic piece of information (a record field)
-* **Data row**: it can be a content of an actual database row or any custom designed viewmodel, from a frontend point of view, it's just an object with many data fields.
-
-### Breaking it down
-Based on above, we are able to break it down to atomic elements:
-
-#### Record
-A data row represented as an object, which stores an isolated set of data and tracks any changes.
-
-* It contains any data field related to our activities
-* It is usually the backend's responsibility to provide the coresponding data, but we also be able to create local data manually
-* While it's mostly just data, also stores the overall validation state of its fields.  
-
-#### Field
-It uses a property of the Record object to display and is responsible for formatting, editing, validation and localization.
-* This very same component is being reused in datagrids and dataforms
-* There are two operational modes: readonly (display) mode / editable mode
-
-#### DataForm
-This is a collection of readonly/editable Field components, bound to a single Record object.
-It can have field groups to display logically connected Fields together. Bootstrap's `col-*` classes can also be used for controlling the overall form layout. 
-
-#### DataGrid
-It displays a set of Records, represented with a table layout. Table cells consist of Field components. A DataForm component can also be attached to the selected Record.
-To embrace the real power of custom components, related DataGrids can be nested as child DataGrid(s) down to an infinite level. (Nested child grid has a child, and so on.. :-)
-If more then one child Grids are present, it will be displayed with tabbed layout (similiar to MultiGrid). 
-
-#### MultiGrid
-It displays several logically connected DataGrids, represented with a tabbed layout. Each DataGrid has its own tab.
-
-#### The Configuration Object
-Our holy grail, containing all the settings for our components. It is commonly used by all components making it possible to use them as lego-parts anywhere.
-The config contains a set of definitions for fields, backend-connection, parent-child relations, etc.
-
-Simplified sematic view of DataGrid/DataForm configuration objects:
-```
-<grid-definition> {
-    <base-attributes>
-    <form-options>
-    <columns>: [
-        <field-definition>,
-        <field-definition>
-    ]
-    <children>: [
-        <grid-definition>,
-        <grid-definition>
-    ]
-    <child-options>
-}
-
-```
-
-Based on above, a similiar view of Field configuration objects. It is the integral part of any DataGrid/DataForm config, but it can be used with standalone Fields as well. 
-```
-<field-definition> {
-    <base-attributes>,
-    <filter-options>
-    <editor-options>,
-    <validation-options>
-}
-```
-
-MultiGrid configuration is simply an array of DataGrid configs objects:
-```
-[
-    <grid-definition>,
-    <grid-definition>,
-    <grid-definition> 
-]
-```
-
-Full example here: [config.example.json](./demo/config.example.json)
-
-## Installation
+### 1.1 JSPM
 
 Run `jspm install npm:aurelia-editables`
 
@@ -114,42 +30,112 @@ This plugin has several resources other than the main javascript file, so we'll 
 "aurelia-editables/**/*.css!text",
 ```
 
-### Setting up localization
+### 1.2 aurelia-cli
 
-i18n-xhr-backend is being used by default to load translation files from the server. Up until this moment, I haven't found any solution to load these files directly from the plugin's installation folder. For now,  `jspm_packages/npm/aurelia-editables@version>/locales` folder should be copied to your configured path (by default to `<wwwroot>/`) in order to make it work.
+Install via NPM
 
+```javascript
+npm install aurelia-editables --save
+```
 
-### Setting up dev. environment
-After downloading / forking this repo, an `npm install` will do the initial steps. Presuming you've managed to escape from the gates of dependency hell unleashed by npm, do these steps:
+#### 1.2.1 `editables` helper task for aurelia-cli
 
-* `typings install` - set up TypeScript definitions:   
-* `gulp build` - build the project with 
-* `gulp watch` - use it for automatic rebuild
-* I would recommend to install `jspm-local` or `jspm-fs` for testing with local package installation
-* Happy coding! :) 
+Since aurelia-cli is still in alpha stage and `install` command is not yet implemented, I've created a custom cli task to help you with configuring plugin dependencies in `aurelia.json`. It adds a pre-configured set of dependencies to `aurelia.json`. 
+A post-install npm script takes care of placing this new `editables.ts|js` task into `aurelia_project/tasks` folder.
+ 
+**All parameters are optional**
 
-### Dependency stuff
-A few, but not overwhelming yet:
+| Optional parameters | Description |
+| ------------------- | ----------- |
+| --bundle, b <bundle-file.js> | Set bundle section to be modified |
+| --force, f | Overwrite previously set dependencies (applies to this package's dependencies only! It won't delete the whole bundle setting.) |
+| --generate, g <options> | (Not implemented yet.) Generates a Grid/Form configuration based on given parameters and saves it to a json file. |
 
-* aurelia-validation
-* aurelia-i18n
-* lodash
-* interact.js (for column resizing)
-* bootstrap css + js (therefore + jQuery)
-* font-awesome
-* less
+Run `editables` helper
 
+```
+au editables [--bunde <custom-bundle-filename>] [--force]
+```
 
-## Usage
+**Note:** tested on Windows platform only.
+
+#### 1.2.2 Manual bundle configuration
+
+If you'd prefer embracing the power of `CTRL+C` over using some mysterious script, just add below section to your desired bundle section in `aurelia.json`:
+
+```
+    ...
+    
+    "aurelia-http-client",
+    {
+        "name": "jquery",
+        "path": "../node_modules/jquery/dist",
+        "main": "jquery.min"
+    },
+    {
+        "name": "bootstrap",
+        "path": "../node_modules/bootstrap/dist",
+        "main": "js/bootstrap.min",
+        "deps": ["jquery"],
+        "exports": "$"
+    },
+    {
+        "name": "i18next",
+        "path": "../node_modules/i18next/dist/umd",
+        "main": "i18next"
+    },
+    {
+        "name": "aurelia-i18n",
+        "path": "../node_modules/aurelia-i18n/dist/amd",
+        "main": "aurelia-i18n"
+    },
+    {
+        "name": "i18next-xhr-backend",
+        "path": "../node_modules/i18next-xhr-backend/dist/umd",
+        "main": "i18nextXHRBackend"
+    },
+    {
+        "name": "aurelia-validation",
+        "path": "../node_modules/aurelia-validation/dist/amd",
+        "main": "aurelia-validation"
+    },
+    {
+        "name": "aurelia-ui-virtualization",
+        "path": "../node_modules/aurelia-ui-virtualization/dist/amd",
+        "main": "aurelia-ui-virtualization"
+    },
+    {
+        "name": "aurelia-editables",
+        "path": "../node_modules/aurelia-editables/dist/amd",
+        "main": "aurelia-editables",
+        "resources": [
+            "**/*.html",
+            "**/*.css"
+        ]
+    }
+    
+    ...
+```
+
+### 1.3 Webpack
+
+@TODO: provide installation steps.
+I have no prior experience with webpack. Any feedback or help would be appreciated on this. 
+
+## 2. Usage
 
 Register plugin in your `main.js`. It will configure all resources, no additional `<require>` tags will be necessary in the views.
 
 Default configuration...
-```js
-aurelia.use
+```javascript
+export function configure(aurelia) {
+  aurelia.use
     .standardConfiguration()
     .developmentLogging()
-    .plugin('aurelia-editables');
+    .plugin('aurelia-editables'); // Add this line to load the plugin
+
+  aurelia.start().then(a => a.setRoot());
+}
 ```
 
 ...or customized configuration
@@ -157,7 +143,7 @@ aurelia.use
 aurelia.use
     .standardConfiguration()
     .developmentLogging()
-    .plugin('aurelia-editables', (config: i18nSetup) => {
+    .plugin('aurelia-editables', (config) => {
         // replace default remote data connector
         config.api = MyOwnApiClass;     
         
@@ -166,15 +152,10 @@ aurelia.use
         
         // register additional editor templates 
         config.editors['datepicker'] = './custom/date-picker';
-
-        // change i18n defaults
-        config.onSeti18n = (setup: i18nSetup) => {
-            setup.lng = 'de';
-        };
     });
 ```
 
-### Usage in views:
+### 2.1 Usage in views:
 
 MultiGrid:
 ```html
@@ -201,21 +182,19 @@ Standalone Fields:
        with-label.bind="true" />
 ```
 
-
-#### Events
+### 2.1 Events
 
 There are a bunch of bindable events available for all components. Usually, the viewModel instance can be accessed through the `viewModel` property of any `$event.detail` object.
 
-
-DataForm source:
+data-grid.ts source:
 ```js
-this.dispatch('on-created', { viewModel: this });
+this.dispatch('on-before-save', { viewModel: this, changes: changes });
 ```
 
 Usage in template (my-view-model.html):
 ```html
 <template>
-    <data-form on-created.delegate="myEvent($event)"></data-form>
+    <data-grid on-before-save.delegate="myEvent($event)"></data-grid>
 </template>
 ```
 
@@ -232,7 +211,114 @@ export class MyViewModel {
 }
 ```
 
+### 2.2 Components:
 
-### TypeScript definitions
+| Name | Tag | Description |
+| ---- | --- | ----------- |
+| DataGrid | `<data-grid>` | Editable DataGrid, generated based on a configuration object |
+| MultiGrid | `<multi-grid>` | Tabbed view generated based on an array of configuration objects |
+| DataForm | `<data-form>` | Editable form, generated based on the same configuration as DataGrids |
+| Field | `<field>` | Basic data editor component |
 
-Corresponding .d.ts files are available in the `typings_custom` folder.
+
+### 2.3 The Configuration Object
+It is commonly used by all components, which makes it possible to combine them as lego-parts.
+The config contains a set of definitions for fields/columns, backend-connection, parent-child relations, etc.
+
+Simplified sematic view of DataGrid/DataForm configuration objects:
+```
+<grid-definition> {
+    <base-attributes>
+    <form-options>
+    <columns>: [
+        <field-definition>,
+        <field-definition>
+    ]
+    <children>: [
+        <grid-definition>,
+        <grid-definition>
+    ]
+    <child-options>
+}
+
+```
+
+Based on above, a similar view of Field configuration objects. It is the integral part of any DataGrid/DataForm config, but it can be used with standalone Fields as well. 
+```
+<field-definition> {
+    <base-attributes>,
+    <filter-options>
+    <editor-options>,
+    <validation-options>
+}
+```
+
+MultiGrid configuration is simply an array of DataGrid configs objects:
+```
+[
+    <grid-definition>,
+    <grid-definition>,
+    <grid-definition> 
+]
+```
+
+Full example here: [config.example.json](./docs/config.example.json)
+
+### 2.3 TypeScript definitions
+
+Definition is available in `typings_custom` and `dist` folders. Package.json has been configured as well. 
+
+## 3. Dependencies
+
+* aurelia-validation
+* aurelia-ui-virtualization
+* aurelia-http-client
+* aurelia-i18n
+* i18n-xhr-backend
+* interact.js (for column resizing)
+* font-awesome
+* animate.css
+* Bootstrap
+
+**Notes on jQuery + Bootstrap:**
+Although, this plugin is not dependent on jQuery, the basic layout has primarily designed to work with Bootstrap. 
+That means no hard dependencies in this project, but your application may need to have jQuery and Bootstrap bundled.
+
+`MultiGrid` component: 
+* This is the only element, where Bootstrap Javascript is used (for tabbed layout).
+* In theory, if you choose not to use `MultiGrid`, then referencing Bootstrap css only without jQuery + Bootstrap JS references could be working.
+* Alternatively, you can implement your own tabbed MultiGrid-like element. 
+
+**Support for Other UI frameworks** (not implemented)
+@TODO: I have some ideas how to do that. For example, by making views replaceable via configuration or binding. 
+E.g. `<data-grid layout.bind="./grid-sematic-ui.html"></data-grid>` 
+
+
+## 4. Platform Support
+
+This library can be used in the **browser** only.
+
+## 5. Building The Code
+
+To build the code, follow these steps.
+
+1. Ensure that [NodeJS](http://nodejs.org/) is installed. This provides the platform on which the build tooling runs.
+2. From the project folder, execute the following command:
+
+  ```shell
+  npm install
+  ```
+3. Ensure that [Gulp](http://gulpjs.com/) is installed. If you need to install it, use the following command:
+
+  ```shell
+  npm install -g gulp
+  ```
+4. To build the code, you can now run:
+
+  ```shell
+  gulp build
+  ```
+5. You will find the compiled code in the `dist` folder, available in three module formats: AMD, CommonJS and ES6.
+
+6. See `gulpfile.js` for other tasks related to generating the docs and linting.
+

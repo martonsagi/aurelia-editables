@@ -1,0 +1,16 @@
+{
+    "name": "editables",
+    "description": "Helper for aurelia-editables plugin, it helps you to configure bundle dependencies",
+    "flags": [
+        {
+            "name": "bunde",
+            "description": "Sets bundle section to be modified",
+            "type": "string"
+        },
+        {
+            "name": "force",
+            "description": "Overwrite previously set dependencies. This applies to dependencies of aurelia-editables only!",
+            "type": "boolean"
+        }
+    ]
+}

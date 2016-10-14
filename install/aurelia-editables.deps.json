@@ -41,6 +41,9 @@
         "name": "aurelia-editables",
         "path": "../node_modules/aurelia-editables/dist/amd",
         "main": "aurelia-editables",
-        "resources": ["**/*.html"]
+        "resources": [
+            "**/*.html",
+            "**/*.css"
+        ]
     }
 ]
