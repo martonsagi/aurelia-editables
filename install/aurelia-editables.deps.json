@@ -1,5 +1,6 @@
 [
     "aurelia-http-client",
+    "underscore",
     {
         "name": "jquery",
         "path": "../node_modules/jquery/dist",

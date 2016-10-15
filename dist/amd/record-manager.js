@@ -45,7 +45,7 @@ define(["exports", "./record", "aurelia-framework"], function (exports, _record,
 
         RecordManager.prototype.current = function current(item) {
             this.currentRecord = item;
-            if (this.currentRecord.editMode === true) {
+            if (this.currentRecord && this.currentRecord.editMode === true) {
                 this.currentRecord.setValidationFields(this.validationFields).then(function () {});
             }
         };

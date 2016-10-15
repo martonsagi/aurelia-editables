@@ -68,7 +68,7 @@ export let DataGrid = class DataGrid {
         this.dispatch('on-init', { viewModel: this });
         this.pageSettings = this.options.paging || this.pageSettings;
         this.pageSettings.size = this.pageSettings.size || 10;
-        this.api = new this.apiClass(this.options.api);
+        this.api = this.apiInstance || new this.apiClass(this.options.api);
         this.loadColumns().then(() => {
             if (canLoad === true) this.load();
         });
@@ -338,6 +338,7 @@ export let DataGrid = class DataGrid {
                 this.recordManager.currentRecord.editMode = false;
             }
             this.editMode = false;
+            this.recordManager.validate();
             this.dispatch('on-after-save', { viewModel: this });
         });
     }
@@ -420,6 +421,7 @@ __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showPager", void 0);
 __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
 __decorate([bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
+__decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "apiInstance", void 0);
 __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);
 __decorate([observable(), __metadata('design:type', Boolean)], DataGrid.prototype, "loading", void 0);
 DataGrid = __decorate([autoinject, __metadata('design:paramtypes', [Element, DeepObserver])], DataGrid);

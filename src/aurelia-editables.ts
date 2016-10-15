@@ -1,6 +1,7 @@
 ﻿export * from './record';
 export * from './record-manager';
 export * from './api';
+export * from './api-cached';
 export * from './resources/attributes/resizable-field';
 export * from './resources/elements/pager';
 export * from './resources/elements/field';

@@ -9,6 +9,10 @@ declare module 'aurelia-editables' {
         destroy(data: any): Promise<any>;
     }
 
+    export class ApiCached extends Api {
+
+    }
+
     export type QueryModel = {
         page?: number | null;
         take?: number | null;
@@ -45,6 +49,7 @@ declare module 'aurelia-editables' {
     export type DataObjectViewModel = {
         name?: string | null;
         api?: string | null;
+        cached?: boolean | null;
         title?: string | null;
         titleIcon?: string | null;
         refreshColumns?: boolean | null;

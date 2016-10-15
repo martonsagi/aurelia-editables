@@ -276,6 +276,7 @@ Definition is available in `typings_custom` and `dist` folders. Package.json has
 * aurelia-i18n
 * i18n-xhr-backend
 * interact.js (for column resizing)
+* underscore.js
 * font-awesome
 * animate.css
 * Bootstrap

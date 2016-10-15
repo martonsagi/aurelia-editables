@@ -40,6 +40,18 @@ Object.keys(_api).forEach(function (key) {
     });
 });
 
+var _apiCached = require('./api-cached');
+
+Object.keys(_apiCached).forEach(function (key) {
+    if (key === "default" || key === "__esModule") return;
+    Object.defineProperty(exports, key, {
+        enumerable: true,
+        get: function get() {
+            return _apiCached[key];
+        }
+    });
+});
+
 var _resizableField = require('./resources/attributes/resizable-field');
 
 Object.keys(_resizableField).forEach(function (key) {

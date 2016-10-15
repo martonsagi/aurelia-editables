@@ -3,7 +3,7 @@
     "description": "Helper for aurelia-editables plugin, it helps you to configure bundle dependencies",
     "flags": [
         {
-            "name": "bunde",
+            "name": "bundle",
             "description": "Sets bundle section to be modified",
             "type": "string"
         },

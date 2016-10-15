@@ -30,6 +30,7 @@ export class DataGrid {
     @bindable showPager: boolean = true;
     @bindable filterVisible: boolean = false;
     @bindable toolbarTemplate: string;
+    @bindable apiInstance: any;
 
     @bindable
     gridModel: any;
@@ -133,7 +134,7 @@ export class DataGrid {
         this.pageSettings = this.options.paging || this.pageSettings;
         this.pageSettings.size = this.pageSettings.size || 10;
 
-        this.api = new this.apiClass(this.options.api);
+        this.api = this.apiInstance || new this.apiClass(this.options.api);
         this.loadColumns().then(() => {
             if (canLoad === true)
                 this.load();
@@ -525,6 +526,7 @@ export class DataGrid {
                 this.recordManager.currentRecord.editMode = false;
             }
             this.editMode = false;
+            this.recordManager.validate();
 
             this.dispatch('on-after-save', { viewModel: this });
         });

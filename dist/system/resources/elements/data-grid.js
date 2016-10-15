@@ -126,7 +126,7 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                     this.dispatch('on-init', { viewModel: this });
                     this.pageSettings = this.options.paging || this.pageSettings;
                     this.pageSettings.size = this.pageSettings.size || 10;
-                    this.api = new this.apiClass(this.options.api);
+                    this.api = this.apiInstance || new this.apiClass(this.options.api);
                     this.loadColumns().then(function () {
                         if (canLoad === true) _this.load();
                     });
@@ -498,6 +498,7 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                             _this7.recordManager.currentRecord.editMode = false;
                         }
                         _this7.editMode = false;
+                        _this7.recordManager.validate();
                         _this7.dispatch('on-after-save', { viewModel: _this7 });
                     });
                 };
@@ -607,6 +608,7 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
             __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "showPager", void 0);
             __decorate([bindable, __metadata('design:type', Boolean)], DataGrid.prototype, "filterVisible", void 0);
             __decorate([bindable, __metadata('design:type', String)], DataGrid.prototype, "toolbarTemplate", void 0);
+            __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "apiInstance", void 0);
             __decorate([bindable, __metadata('design:type', Object)], DataGrid.prototype, "gridModel", void 0);
             __decorate([observable(), __metadata('design:type', Boolean)], DataGrid.prototype, "loading", void 0);
             _export("DataGrid", DataGrid = __decorate([autoinject, __metadata('design:paramtypes', [Element, DeepObserver])], DataGrid));

@@ -7,7 +7,7 @@
  * Uses an empty gulp task to execute below logic within aurelia-cli's infrastructure
  *
  * Usage:
- * au editables [--bunde <custom-bundle-filename>] [--force]
+ * au editables [--bundle <custom-bundle-filename>] [--force]
  */
 
 import * as fs from 'fs-extra';
@@ -83,11 +83,17 @@ let configure = function () {
         let name = dep.name || dep,
             check = bundle.dependencies.find(item => (item.name || item) === name);
 
-        if (!check || cliParams.force) {
-            console.log(`[${cliParams.force ? 'MOD' : 'NEW'}] Package '${name}' has been configured.`);
+        if (!check) {
+            console.log(`[NEW] Package '${name}' has been configured.`);
             bundle.dependencies.push(dep);
         } else {
-            console.log(`[SKIP] Package '${name}' has already been configured.`);
+            if (cliParams.force) {
+                let i = bundle.dependencies.indexOf(check);
+                bundle.dependencies[i] = dep;
+                console.log(`[MOD] Package '${name}' has been configured.`);
+            } else {
+                console.log(`[SKIP] Package '${name}' has already been configured.`);
+            }
         }
     }
 
