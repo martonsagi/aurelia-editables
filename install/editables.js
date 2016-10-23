@@ -9,7 +9,6 @@
  */
 
 import * as fs from 'fs-extra';
-import * as project from '../aurelia.json';
 import {CLIOptions} from 'aurelia-cli';
 
 /**
@@ -39,8 +38,27 @@ let getOptions = () => {
     return options;
 };
 
-// collect given parameters
-let cliParams = getOptions();
+/**
+ * Reads aurelia.json
+ *
+ * Using this, because default import statement would
+ * add a "default" member to the original object
+ * causing problems at saving
+ *
+ * @return {Promise|Promise<any>}
+ */
+let getProject = () => {
+    return new Promise((resolve, reject) => {
+        let path = 'aurelia_project/aurelia.json';
+        fs.readJson(path, (err, content) => {
+            if (err) {
+                reject(err);
+            } else {
+                resolve(content);
+            }
+        });
+    });
+};
 
 /**
  * Gets pre-configured array of dependencies
@@ -72,7 +90,7 @@ let getDependencies = (pluginName) => {
  *
  * @void
  */
-let configure = (deps) => {
+let configure = (cliParams, project, deps) => {
     let bundle = null,
         bundles = project.build.bundles;
 
@@ -147,9 +165,12 @@ let configure = (deps) => {
  * Execute
  */
 export default () => {
-    return getDependencies(cliParams.plugin)
-        .then(deps => {
-            configure(deps);
-        })
+    // collect given parameters
+    let cliParams = getOptions();
+
+    let tasks = [getProject(), getDependencies(cliParams.plugin)];
+
+    return Promise.all(tasks)
+        .then(result => configure(cliParams, ...result))
         .catch(err => { throw new Error(err); });
 };
