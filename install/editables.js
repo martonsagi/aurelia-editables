@@ -1,18 +1,15 @@
 /**
  * Mini cli helper for aurelia-editables plugin
  * - Configures bundle correctly
- * - Generates datagrid/form configuration (not implemented yet)
  *
- * It's pure ES6 to support Babel/Typescript aurelia-cli projects as well
- * Uses an empty gulp task to execute below logic within aurelia-cli's infrastructure
+ * It's pure ES6 to support Babel/Typescript projects as well
  *
  * Usage:
- * au editables [--bundle <custom-bundle-filename>] [--force]
+ * au editables [--bundle <custom-bundle-filename.js>] [--force]
  */
 
 import * as fs from 'fs-extra';
 import * as project from '../aurelia.json';
-import * as deps from '../../node_modules/aurelia-editables/install/dependencies.json';
 import {CLIOptions} from 'aurelia-cli';
 
 /**
@@ -22,7 +19,7 @@ import {CLIOptions} from 'aurelia-cli';
  * @param shortcut
  * @returns {any|null}
  */
-let getParam = function (name, shortcut) {
+let getParam = (name, shortcut) => {
     if (CLIOptions.hasFlag(name, shortcut)) {
         return CLIOptions.getFlagValue(name, shortcut) || null;
     }
@@ -33,24 +30,49 @@ let getParam = function (name, shortcut) {
  *
  * @return object
  */
-let getOptions = function () {
+let getOptions = () => {
     let options = {};
+    options.plugin = getParam('plugin', 'p') || 'aurelia-editables';
     options.bundle = getParam('bundle', 'b');
-    options.generate = getParam('generate', 'g');
     options.force = CLIOptions.hasFlag('force', 'f');
 
     return options;
 };
 
+// collect given parameters
 let cliParams = getOptions();
 
 /**
- * Configure | default action
- * Edit aurelia.json to add preconfigured dependencies for aurelia-editables package
+ * Gets pre-configured array of dependencies
+ *
+ * @return {Promise|Promise<Array<any>>}
+ */
+let getDependencies = (pluginName) => {
+    return new Promise((resolve, reject) => {
+        let path = `./node_modules/${pluginName}/install/dependencies.json`;
+        fs.exists(path, exists => {
+            if (exists !== true) {
+                reject(`Could not open file: ${path}`);
+            } else {
+                fs.readJson(path, (err, contents) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(contents);
+                    }
+                });
+            }
+        });
+    });
+};
+
+/**
+ * Configures plugin dependencies
+ * Edits aurelia.json to add pre-configured dependencies for aurelia-editables package
  *
  * @void
  */
-let configure = function () {
+let configure = (deps) => {
     let bundle = null,
         bundles = project.build.bundles;
 
@@ -78,6 +100,10 @@ let configure = function () {
         bundleName = bundle.name;
     }
 
+    if (!bundle.dependencies) {
+        bundle.dependencies = [];
+    }
+
     console.log(`[INFO] Bundle found: ${bundle.name}. Configuring new dependencies in aurelia.json for ${bundleName}...`);
     for (let dep of deps) {
         let name = dep.name || dep,
@@ -100,7 +126,7 @@ let configure = function () {
     console.log('[INFO] Saving changes to aurelia.json file...');
     let aureliaProjectFile = 'aurelia_project/aurelia.json';
 
-    fs.copy(aureliaProjectFile, aureliaProjectFile+'.bak', function (err) {
+    fs.copy(aureliaProjectFile, aureliaProjectFile + '.bak', function (err) {
         if (err) {
             console.log('[ERROR] An error occurred while duplicating aurelia.json.', err);
         } else {
@@ -115,29 +141,15 @@ let configure = function () {
             });
         }
     });
-}
-
-/**
- * Generate | generate datagrid json configuration files quickly
- *
- * @todo implemetation
- * @void
- */
-let generate = function (options) {
-    throw new Error("Generate command is not implemented yet.");
 };
 
 /**
  * Execute
  */
-try {
-    if (cliParams.generate) {
-        generate(cliParams.generate);
-    } else {
-        configure();
-    }
-} catch (e) {
-    console.log(e);
-}
-
-export default () => {};
+export default () => {
+    return getDependencies(cliParams.plugin)
+        .then(deps => {
+            configure(deps);
+        })
+        .catch(err => { throw new Error(err); });
+};
