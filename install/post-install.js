@@ -1,7 +1,7 @@
 "use strict";
 
 try {
-    let fs = require('fs-extra');
+    let fs = require('fs-extra'),
         path = require('path'),
         projectFolder = '../../aurelia_project';
 
