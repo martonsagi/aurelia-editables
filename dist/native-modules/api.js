@@ -17,7 +17,7 @@ export var Api = function () {
     };
 
     Api.prototype.get = function get() {
-        var id = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+        var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
         id = id || null;
         return this.client.createRequest('' + this.baseUrl + (id !== null ? '/' + id : '')).asGet().send().then(function (result) {

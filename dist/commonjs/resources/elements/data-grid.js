@@ -7,7 +7,7 @@ exports.DataGrid = undefined;
 
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj; };
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _aureliaFramework = require("aurelia-framework");
 
@@ -54,6 +54,11 @@ var DataGrid = exports.DataGrid = function () {
         this.sortSettings = null;
         this.pageSettings = { current: 1, size: 10 };
         this.scrollBarWidth = 18;
+        this.resizableOptions = {
+            inertia: true,
+            preserveAspectRatio: false,
+            edges: { left: false, right: true, bottom: false, top: false }
+        };
         this.element = element;
         this.deepObserver = deepObserver;
         this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
@@ -226,7 +231,7 @@ var DataGrid = exports.DataGrid = function () {
     DataGrid.prototype.updateColumnWidth = function updateColumnWidth() {
         var _this3 = this;
 
-        var resize = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+        var resize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
         return new Promise(function (resolve, reject) {
             var columnTotalWidth = 0,

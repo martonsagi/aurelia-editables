@@ -1,4 +1,4 @@
-define(['exports', './record', './record-manager', './api', './api-cached', './resources/attributes/resizable-field', './resources/elements/pager', './resources/elements/field', './resources/elements/data-grid-toolbar', './resources/elements/multi-grid', './resources/elements/data-grid', './resources/elements/data-form', './resources/elements/editors/text-editor', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './config', 'aurelia-framework'], function (exports, _record, _recordManager, _api, _apiCached, _resizableField, _pager, _field, _dataGridToolbar, _multiGrid, _dataGrid, _dataForm, _textEditor, _booleanEditor, _dropdownEditor, _config, _aureliaFramework) {
+define(['exports', './record', './record-manager', './api', './api-cached', './resources/elements/pager', './resources/elements/field', './resources/elements/data-grid-toolbar', './resources/elements/multi-grid', './resources/elements/data-grid', './resources/elements/data-form', './resources/elements/editors/text-editor', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './config', 'aurelia-framework'], function (exports, _record, _recordManager, _api, _apiCached, _pager, _field, _dataGridToolbar, _multiGrid, _dataGrid, _dataForm, _textEditor, _booleanEditor, _dropdownEditor, _config, _aureliaFramework) {
     'use strict';
 
     Object.defineProperty(exports, "__esModule", {
@@ -37,15 +37,6 @@ define(['exports', './record', './record-manager', './api', './api-cached', './r
             enumerable: true,
             get: function () {
                 return _apiCached[key];
-            }
-        });
-    });
-    Object.keys(_resizableField).forEach(function (key) {
-        if (key === "default" || key === "__esModule") return;
-        Object.defineProperty(exports, key, {
-            enumerable: true,
-            get: function () {
-                return _resizableField[key];
             }
         });
     });
@@ -132,7 +123,7 @@ define(['exports', './record', './record-manager', './api', './api-cached', './r
     });
     exports.configure = configure;
     function configure(config) {
-        var callback = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+        var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
         var pluginConfig = _aureliaFramework.Container.instance.get(_config.Config);
         pluginConfig.api = _api.Api;
@@ -142,6 +133,6 @@ define(['exports', './record', './record-manager', './api', './api-cached', './r
             dropdown: './editors/dropdown-editor'
         };
         if (callback instanceof Function) callback(pluginConfig);
-        config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
+        config.globalResources('./resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
     }
 });

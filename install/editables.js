@@ -12,7 +12,7 @@
 
 import * as fs from 'fs-extra';
 import * as project from '../aurelia.json';
-import * as deps from '../../node_modules/aurelia-editables/install/aurelia-editables.deps.json';
+import * as deps from '../../node_modules/aurelia-editables/install/dependencies.json';
 import {CLIOptions} from 'aurelia-cli';
 
 /**

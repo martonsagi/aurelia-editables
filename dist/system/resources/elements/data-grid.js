@@ -49,7 +49,7 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
             _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
                 return typeof obj;
             } : function (obj) {
-                return obj && typeof Symbol === "function" && obj.constructor === Symbol ? "symbol" : typeof obj;
+                return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
             };
 
             __decorate = undefined && undefined.__decorate || function (decorators, target, key, desc) {
@@ -85,6 +85,11 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                     this.sortSettings = null;
                     this.pageSettings = { current: 1, size: 10 };
                     this.scrollBarWidth = 18;
+                    this.resizableOptions = {
+                        inertia: true,
+                        preserveAspectRatio: false,
+                        edges: { left: false, right: true, bottom: false, top: false }
+                    };
                     this.element = element;
                     this.deepObserver = deepObserver;
                     this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));
@@ -257,7 +262,7 @@ System.register(["aurelia-framework", "../../config", "../../api", "../../record
                 DataGrid.prototype.updateColumnWidth = function updateColumnWidth() {
                     var _this3 = this;
 
-                    var resize = arguments.length <= 0 || arguments[0] === undefined ? false : arguments[0];
+                    var resize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
 
                     return new Promise(function (resolve, reject) {
                         var columnTotalWidth = 0,

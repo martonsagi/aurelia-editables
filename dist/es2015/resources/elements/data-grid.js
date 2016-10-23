@@ -32,6 +32,11 @@ export let DataGrid = class DataGrid {
         this.sortSettings = null;
         this.pageSettings = { current: 1, size: 10 };
         this.scrollBarWidth = 18;
+        this.resizableOptions = {
+            inertia: true,
+            preserveAspectRatio: false,
+            edges: { left: false, right: true, bottom: false, top: false }
+        };
         this.element = element;
         this.deepObserver = deepObserver;
         this.deepObserverDisposer = this.deepObserver.observe(this, 'options', this.optionsChanged.bind(this));

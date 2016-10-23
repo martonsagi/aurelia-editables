@@ -2,7 +2,6 @@
 export * from './record-manager';
 export * from './api';
 export * from './api-cached';
-export * from './resources/attributes/resizable-field';
 export * from './resources/elements/pager';
 export * from './resources/elements/field';
 export * from './resources/elements/data-grid-toolbar';
@@ -32,7 +31,6 @@ export function configure(config, callback = null) {
 
     config
         .globalResources(
-            './resources/attributes/resizable-field',
             './resources/elements/editors/boolean-editor',
             './resources/elements/editors/dropdown-editor',
             './resources/elements/editors/text-editor',

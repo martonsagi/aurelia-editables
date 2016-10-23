@@ -41,7 +41,7 @@ export class Field {
     inputType: string;
     editorType: string;
     editorViewModel: string;
-    validationMode = validateTrigger.change;
+    validationMode: any = validateTrigger.change;
     controller: ValidationController;
     errors: Array<any>;
 

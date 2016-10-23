@@ -52,18 +52,6 @@ Object.keys(_apiCached).forEach(function (key) {
     });
 });
 
-var _resizableField = require('./resources/attributes/resizable-field');
-
-Object.keys(_resizableField).forEach(function (key) {
-    if (key === "default" || key === "__esModule") return;
-    Object.defineProperty(exports, key, {
-        enumerable: true,
-        get: function get() {
-            return _resizableField[key];
-        }
-    });
-});
-
 var _pager = require('./resources/elements/pager');
 
 Object.keys(_pager).forEach(function (key) {
@@ -178,7 +166,7 @@ var _config = require('./config');
 var _aureliaFramework = require('aurelia-framework');
 
 function configure(config) {
-    var callback = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     var pluginConfig = _aureliaFramework.Container.instance.get(_config.Config);
     pluginConfig.api = _api.Api;
@@ -188,5 +176,5 @@ function configure(config) {
         dropdown: './editors/dropdown-editor'
     };
     if (callback instanceof Function) callback(pluginConfig);
-    config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
+    config.globalResources('./resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
 }

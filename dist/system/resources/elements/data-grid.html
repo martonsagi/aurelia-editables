@@ -74,8 +74,8 @@
                         </th>
                         <th id="th-${column.name}"
                             show.bind="column.hide !== true"
-                            resizable-field
-                            resizable-field-onmove.delegate="resizeColumn($event, column)"
+                            interact-resizable.bind="resizableOptions"
+                            interact-resizemove.delegate="resizeColumn($event, column)"
                             repeat.for="column of options.columns">
 
                             <div class="${column.type+'-content'} column-header"

@@ -2,7 +2,6 @@ export * from './record';
 export * from './record-manager';
 export * from './api';
 export * from './api-cached';
-export * from './resources/attributes/resizable-field';
 export * from './resources/elements/pager';
 export * from './resources/elements/field';
 export * from './resources/elements/data-grid-toolbar';
@@ -24,5 +23,5 @@ export function configure(config, callback = null) {
         dropdown: './editors/dropdown-editor'
     };
     if (callback instanceof Function) callback(pluginConfig);
-    config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
+    config.globalResources('./resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
 }

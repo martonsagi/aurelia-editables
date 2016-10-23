@@ -72,7 +72,7 @@ define(['exports', 'aurelia-framework', 'aurelia-http-client', 'underscore'], fu
         ApiCached.prototype.get = function get() {
             var _this2 = this;
 
-            var id = arguments.length <= 0 || arguments[0] === undefined ? null : arguments[0];
+            var id = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
 
             id = id || null;
             return new Promise(function (resolve) {

@@ -2,7 +2,6 @@ export * from './record';
 export * from './record-manager';
 export * from './api';
 export * from './api-cached';
-export * from './resources/attributes/resizable-field';
 export * from './resources/elements/pager';
 export * from './resources/elements/field';
 export * from './resources/elements/data-grid-toolbar';
@@ -16,7 +15,7 @@ import { Api } from './api';
 import { Config } from './config';
 import { Container } from 'aurelia-framework';
 export function configure(config) {
-    var callback = arguments.length <= 1 || arguments[1] === undefined ? null : arguments[1];
+    var callback = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
 
     var pluginConfig = Container.instance.get(Config);
     pluginConfig.api = Api;
@@ -26,5 +25,5 @@ export function configure(config) {
         dropdown: './editors/dropdown-editor'
     };
     if (callback instanceof Function) callback(pluginConfig);
-    config.globalResources('./resources/attributes/resizable-field', './resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
+    config.globalResources('./resources/elements/editors/boolean-editor', './resources/elements/editors/dropdown-editor', './resources/elements/editors/text-editor', './resources/elements/field', './resources/elements/pager', './resources/elements/data-form', './resources/elements/data-grid-toolbar', './resources/elements/data-grid', './resources/elements/multi-grid');
 }

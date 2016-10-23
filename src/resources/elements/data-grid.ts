@@ -72,6 +72,13 @@ export class DataGrid {
     // TODO: change fixed value to dynamic calculation
     private scrollBarWidth = 18;
 
+    // interact.js config
+    resizableOptions: any = {
+        inertia: true,
+        preserveAspectRatio: false,
+        edges: { left: false, right: true, bottom: false, top: false }
+    };
+
     get toolbarTemplateOption() {
         return this.options.toolbarTemplate || this.toolbarTemplate || './data-grid-toolbar';
     }
