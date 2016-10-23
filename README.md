@@ -66,7 +66,18 @@ If you'd prefer embracing the power of `CTRL+C` over using some mysterious scrip
 ```
     ...
     
+    {
+        "name": "interact",
+        "path": "../node_modules/interact.js/dist",
+        "main": "interact"
+    },
+    {
+        "name": "aurelia-interactjs",
+        "path": "../node_modules/aurelia-interactjs/dist/amd",
+        "main": "index"
+    },
     "aurelia-http-client",
+    "underscore",
     {
         "name": "jquery",
         "path": "../node_modules/jquery/dist",
@@ -124,7 +135,7 @@ I have no prior experience with webpack. Any feedback or help would be appreciat
 
 ## 2. Usage
 
-Register plugin in your `main.js`. It will configure all resources, no additional `<require>` tags will be necessary in the views.
+Register plugin in your `main.js`. It configures all resources, eliminating the need for additional `<require>` declarations in views.
 
 Default configuration...
 ```javascript
@@ -132,6 +143,7 @@ export function configure(aurelia) {
   aurelia.use
     .standardConfiguration()
     .developmentLogging()
+    .plugin('aurelia-interactjs') // Add this line to load interact.js (optional)
     .plugin('aurelia-editables'); // Add this line to load the plugin
 
   aurelia.start().then(a => a.setRoot());
@@ -143,6 +155,7 @@ export function configure(aurelia) {
 aurelia.use
     .standardConfiguration()
     .developmentLogging()
+    .plugin('aurelia-interactjs') // Add this line to load interact.js (optional)    
     .plugin('aurelia-editables', (config) => {
         // replace default remote data connector
         config.api = MyOwnApiClass;     
@@ -275,11 +288,15 @@ Definition is available in `typings_custom` and `dist` folders. Package.json has
 * aurelia-http-client
 * aurelia-i18n
 * i18n-xhr-backend
-* interact.js (for column resizing)
+* [aurelia-interactjs](https://github.com/eriklieben/aurelia-interactjs) (for column resizing)
 * underscore.js
 * font-awesome
 * animate.css
 * Bootstrap
+
+**Notes on aurelia-interactjs**:
+Its usage is optional at this point in time, there is no hard reference for it. If you don't need column resizing, it can be left out from plugin references in `main.js|ts`. 
+Future versions: planned drag and drop features may involve deeper integration with this plugin.    
 
 **Notes on jQuery + Bootstrap:**
 Although, this plugin is not dependent on jQuery, the basic layout has primarily designed to work with Bootstrap. 
@@ -319,7 +336,7 @@ To build the code, follow these steps.
   ```shell
   gulp build
   ```
-5. You will find the compiled code in the `dist` folder, available in three module formats: AMD, CommonJS and ES6.
+5. You will find the compiled code in the `dist` folder, available in five module formats: AMD, CommonJS, ES2015, Native-modules and System.
 
 6. See `gulpfile.js` for other tasks related to generating the docs and linting.
 
